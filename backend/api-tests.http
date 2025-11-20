@@ -1,0 +1,250 @@
+### Variables
+@baseUrl = http://localhost:8080/api
+@authToken = YOUR_JWT_TOKEN_HERE
+
+### ==============================================
+### HEALTH CHECK
+### ==============================================
+
+### Health Check
+GET {{baseUrl}}/health
+Accept: application/json
+
+### ==============================================
+### LISTINGS (Public endpoints)
+### ==============================================
+
+### Get all listings
+GET {{baseUrl}}/listings
+Accept: application/json
+
+### Get all listings with filters (category)
+GET {{baseUrl}}/listings?category=Vêtements
+Accept: application/json
+
+### Get all listings with filters (location)
+GET {{baseUrl}}/listings?location=Paris
+Accept: application/json
+
+### Get all listings with filters (price range)
+GET {{baseUrl}}/listings?minPrice=10&maxPrice=100
+Accept: application/json
+
+### Get all listings with search term
+GET {{baseUrl}}/listings?search=vélo
+Accept: application/json
+
+### Get all listings with multiple filters
+GET {{baseUrl}}/listings?category=Électronique&location=Lyon&minPrice=50&maxPrice=500&search=ordinateur
+Accept: application/json
+
+### Get listing by ID
+GET {{baseUrl}}/listings/REPLACE_WITH_ACTUAL_LISTING_ID
+Accept: application/json
+
+### ==============================================
+### LISTINGS (Authenticated endpoints)
+### ==============================================
+
+### Create a new listing
+POST {{baseUrl}}/listings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "iPhone 13 Pro",
+  "description": "iPhone 13 Pro en très bon état, acheté il y a 6 mois. Toujours sous garantie.",
+  "price": 850.00,
+  "category": "Électronique",
+  "location": "Paris",
+  "imageUrls": [
+    "https://example.s3.eu-west-3.amazonaws.com/user123/image1.jpg",
+    "https://example.s3.eu-west-3.amazonaws.com/user123/image2.jpg"
+  ]
+}
+
+### Create a listing - Vêtements
+POST {{baseUrl}}/listings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Manteau d'hiver North Face",
+  "description": "Manteau North Face taille M, porté une saison seulement. Comme neuf.",
+  "price": 120.00,
+  "category": "Vêtements",
+  "location": "Lyon",
+  "imageUrls": [
+    "https://example.s3.eu-west-3.amazonaws.com/user123/coat.jpg"
+  ]
+}
+
+### Create a listing - Véhicules
+POST {{baseUrl}}/listings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Vélo électrique Decathlon",
+  "description": "Vélo électrique acheté en 2022, peu utilisé. Batterie en excellent état.",
+  "price": 800.00,
+  "category": "Véhicules",
+  "location": "Bordeaux",
+  "imageUrls": []
+}
+
+### Create a listing - Maison & Jardin
+POST {{baseUrl}}/listings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Canapé 3 places IKEA",
+  "description": "Canapé IKEA en tissu gris, très confortable. À récupérer sur place.",
+  "price": 200.00,
+  "category": "Maison & Jardin",
+  "location": "Marseille",
+  "imageUrls": [
+    "https://example.s3.eu-west-3.amazonaws.com/user456/sofa1.jpg",
+    "https://example.s3.eu-west-3.amazonaws.com/user456/sofa2.jpg",
+    "https://example.s3.eu-west-3.amazonaws.com/user456/sofa3.jpg"
+  ]
+}
+
+### Create a listing - Loisirs & Divertissement
+POST {{baseUrl}}/listings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "PlayStation 5 + 3 jeux",
+  "description": "PS5 édition standard avec 3 jeux (FIFA 24, Spider-Man, God of War). État impeccable.",
+  "price": 450.00,
+  "category": "Loisirs & Divertissement",
+  "location": "Toulouse",
+  "imageUrls": [
+    "https://example.s3.eu-west-3.amazonaws.com/user789/ps5.jpg"
+  ]
+}
+
+### Delete a listing
+DELETE {{baseUrl}}/listings/REPLACE_WITH_ACTUAL_LISTING_ID
+Authorization: Bearer {{authToken}}
+
+### ==============================================
+### UPLOADS (Authenticated endpoints)
+### ==============================================
+
+### Generate presigned URL for image upload (JPEG)
+POST {{baseUrl}}/uploads/presigned-url
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "filename": "product-photo.jpg",
+  "contentType": "image/jpeg"
+}
+
+### Generate presigned URL for image upload (PNG)
+POST {{baseUrl}}/uploads/presigned-url
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "filename": "screenshot.png",
+  "contentType": "image/png"
+}
+
+### Generate presigned URL for image upload (WebP)
+POST {{baseUrl}}/uploads/presigned-url
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "filename": "modern-image.webp",
+  "contentType": "image/webp"
+}
+
+### ==============================================
+### USER (Authenticated endpoints)
+### ==============================================
+
+### Get current user profile
+GET {{baseUrl}}/me
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### Get current user's listings
+GET {{baseUrl}}/me/listings
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### ==============================================
+### ERROR SCENARIOS (for testing validation)
+### ==============================================
+
+### Create listing without auth (should fail with 401)
+POST {{baseUrl}}/listings
+Content-Type: application/json
+
+{
+  "title": "Test Product",
+  "description": "This should fail",
+  "price": 100.00,
+  "category": "Électronique",
+  "location": "Paris",
+  "imageUrls": []
+}
+
+### Create listing with invalid data (missing required fields)
+POST {{baseUrl}}/listings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "",
+  "description": "",
+  "price": -10.00
+}
+
+### Create listing with negative price
+POST {{baseUrl}}/listings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Invalid Product",
+  "description": "This has a negative price",
+  "price": -50.00,
+  "category": "Électronique",
+  "location": "Paris",
+  "imageUrls": []
+}
+
+### Get non-existent listing (should fail with 404)
+GET {{baseUrl}}/listings/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Delete non-existent listing (should fail with 404)
+DELETE {{baseUrl}}/listings/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{authToken}}
+
+### Generate presigned URL without auth (should fail with 401)
+POST {{baseUrl}}/uploads/presigned-url
+Content-Type: application/json
+
+{
+  "filename": "test.jpg",
+  "contentType": "image/jpeg"
+}
+
+### ==============================================
+### NOTES
+### ==============================================
+
+# 1. Replace {{authToken}} with your actual JWT token from Clerk
+# 2. Replace REPLACE_WITH_ACTUAL_LISTING_ID with real listing IDs from your database
+# 3. The base URL is set to http://localhost:8080/api (dev mode)
+# 4. Categories available: Électronique, Vêtements, Véhicules, Maison & Jardin, Loisirs & Divertissement, Autres
+# 5. For authenticated requests, you need a valid JWT token from Clerk authentication
+

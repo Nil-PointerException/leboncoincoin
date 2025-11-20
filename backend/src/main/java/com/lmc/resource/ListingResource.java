@@ -19,7 +19,7 @@ import jakarta.ws.rs.core.Response;
 import java.math.BigDecimal;
 import java.util.List;
 
-@Path("/api/listings")
+@Path("/listings")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ListingResource {

@@ -10,7 +10,7 @@ import jakarta.ws.rs.core.Response;
 import java.time.Instant;
 import java.util.Map;
 
-@Path("/api/health")
+@Path("/health")
 @Produces(MediaType.APPLICATION_JSON)
 @PermitAll
 public class HealthResource {

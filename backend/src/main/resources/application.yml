@@ -12,15 +12,15 @@ quarkus:
 
   # OIDC / Clerk Authentication
   oidc:
-    enabled: true
-    auth-server-url: https://CLERK_DOMAIN/.well-known/openid-configuration
-    client-id: ${CLERK_CLIENT_ID:changeme}
+    enabled: ${OIDC_ENABLED:false}
+    auth-server-url: ${CLERK_AUTH_SERVER_URL:}
+    client-id: ${CLERK_CLIENT_ID:}
     credentials:
-      secret: ${CLERK_CLIENT_SECRET:changeme}
+      secret: ${CLERK_CLIENT_SECRET:}
     tls:
-      verification: required
+      verification: ${OIDC_TLS_VERIFICATION:required}
     token:
-      issuer: https://CLERK_DOMAIN
+      issuer: ${CLERK_ISSUER:}
       audience: ${CLERK_AUDIENCE:}
     authentication:
       cookie-path: /
@@ -31,7 +31,7 @@ quarkus:
   datasource:
     db-kind: postgresql
     username: ${DB_USERNAME:lmc_user}
-    password: ${DB_PASSWORD:changeme}
+    password: ${DB_PASSWORD:lmc_password}
     jdbc:
       url: ${DB_URL:jdbc:postgresql://localhost:5432/lmc_db}
       max-size: 16

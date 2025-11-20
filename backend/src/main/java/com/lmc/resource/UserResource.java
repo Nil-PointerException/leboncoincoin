@@ -17,7 +17,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
-@Path("/api/me")
+@Path("/me")
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
 public class UserResource {
