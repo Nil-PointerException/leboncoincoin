@@ -1,0 +1,105 @@
+quarkus:
+  application:
+    name: lmc-backend
+
+  # Lambda HTTP configuration
+  lambda:
+    handler: stream
+
+  # RESTEasy Reactive
+  resteasy-reactive:
+    path: /api
+
+  # OIDC / Clerk Authentication
+  oidc:
+    enabled: true
+    auth-server-url: https://CLERK_DOMAIN/.well-known/openid-configuration
+    client-id: ${CLERK_CLIENT_ID:changeme}
+    credentials:
+      secret: ${CLERK_CLIENT_SECRET:changeme}
+    tls:
+      verification: required
+    token:
+      issuer: https://CLERK_DOMAIN
+      audience: ${CLERK_AUDIENCE:}
+    authentication:
+      cookie-path: /
+      redirect-path: /login
+      scopes: openid,email,profile
+
+  # Database (PostgreSQL)
+  datasource:
+    db-kind: postgresql
+    username: ${DB_USERNAME:lmc_user}
+    password: ${DB_PASSWORD:changeme}
+    jdbc:
+      url: ${DB_URL:jdbc:postgresql://localhost:5432/lmc_db}
+      max-size: 16
+
+  # Hibernate ORM
+  hibernate-orm:
+    database:
+      generation: none
+    log:
+      sql: ${DB_LOG_SQL:false}
+
+  # Flyway migrations
+  flyway:
+    migrate-at-start: true
+    baseline-on-migrate: true
+    baseline-version: 1.0.0
+
+  # S3
+  s3:
+    endpoint-override: ${S3_ENDPOINT:}
+    aws:
+      region: ${AWS_REGION:eu-west-3}
+      credentials:
+        type: default
+
+  # HTTP
+  http:
+    port: 8080
+    cors:
+      ~: true
+      origins: ${CORS_ORIGINS:http://localhost:5173}
+      methods: GET,POST,PUT,DELETE,OPTIONS
+      headers: accept,authorization,content-type,x-requested-with
+      exposed-headers: Content-Disposition
+      access-control-max-age: 86400
+
+  # Logging
+  log:
+    level: INFO
+    category:
+      "com.lmc":
+        level: DEBUG
+    console:
+      enable: true
+      format: "%d{HH:mm:ss} %-5p [%c{2.}] (%t) %s%e%n"
+
+# Application-specific configuration
+app:
+  s3:
+    bucket-name: ${S3_BUCKET_NAME:lmc-images}
+    presigned-url-expiration: 300 # 5 minutes in seconds
+
+# Production profile (for AWS Lambda + RDS)
+"%prod":
+  quarkus:
+    datasource:
+      jdbc:
+        url: ${DB_URL}
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+    hibernate-orm:
+      database:
+        generation: none
+      log:
+        sql: false
+    log:
+      level: INFO
+      category:
+        "com.lmc":
+          level: INFO
+

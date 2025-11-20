@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: LMC Backend - Classified Ads Platform (PostgreSQL + RDS)
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: java21
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        QUARKUS_PROFILE: prod
+
+Parameters:
+  DbUrl:
+    Type: String
+    Description: PostgreSQL JDBC URL
+  DbUsername:
+    Type: String
+    Description: Database username
+  DbPassword:
+    Type: String
+    NoEcho: true
+    Description: Database password
+  ClerkClientId:
+    Type: String
+    Description: Clerk Client ID
+  ClerkClientSecret:
+    Type: String
+    NoEcho: true
+    Description: Clerk Client Secret
+  ClerkDomain:
+    Type: String
+    Description: Clerk Domain
+  S3BucketName:
+    Type: String
+    Default: lmc-images
+    Description: S3 Bucket for images
+  VpcSubnetIds:
+    Type: CommaDelimitedList
+    Description: VPC Subnet IDs for Lambda (must be in same VPC as RDS)
+  SecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: Security Group IDs for Lambda
+
+Resources:
+  LmcFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: lmc-backend
+      CodeUri: target/function.zip
+      Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
+      VpcConfig:
+        SubnetIds: !Ref VpcSubnetIds
+        SecurityGroupIds: !Ref SecurityGroupIds
+      Environment:
+        Variables:
+          DB_URL: !Ref DbUrl
+          DB_USERNAME: !Ref DbUsername
+          DB_PASSWORD: !Ref DbPassword
+          S3_BUCKET_NAME: !Ref S3BucketName
+          CLERK_CLIENT_ID: !Ref ClerkClientId
+          CLERK_CLIENT_SECRET: !Ref ClerkClientSecret
+          CLERK_DOMAIN: !Ref ClerkDomain
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref S3BucketName
+        - VPCAccessPolicy: {}
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+  
+  FunctionArn:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt LmcFunction.Arn

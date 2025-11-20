@@ -1,0 +1,242 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@clerk/clerk-react'
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Box,
+  Alert,
+  CircularProgress,
+  IconButton,
+  ImageList,
+  ImageListItem,
+  ImageListItemBar,
+} from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import { listingsApi, uploadApi, setAuthToken } from '@/services/api'
+import type { CreateListingRequest } from '@/types'
+
+export default function CreateListingPage() {
+  const navigate = useNavigate()
+  const { getToken } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [uploadedImages, setUploadedImages] = useState<string[]>([])
+  const [uploading, setUploading] = useState(false)
+
+  const [formData, setFormData] = useState<CreateListingRequest>({
+    title: '',
+    description: '',
+    price: 0,
+    category: '',
+    location: '',
+    imageUrls: [],
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'price' ? parseFloat(value) || 0 : value,
+    }))
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    setError(null)
+
+    try {
+      const token = await getToken()
+      setAuthToken(token)
+
+      for (const file of Array.from(files)) {
+        // Get presigned URL
+        const { uploadUrl, publicUrl } = await uploadApi.getPresignedUrl(file.name, file.type)
+
+        // Upload to S3
+        await uploadApi.uploadToS3(uploadUrl, file)
+
+        // Add to uploaded images
+        setUploadedImages((prev) => [...prev, publicUrl])
+      }
+    } catch (err) {
+      console.error('Error uploading image:', err)
+      setError("Erreur lors de l'upload de l'image")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleRemoveImage = (index: number) => {
+    setUploadedImages((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    try {
+      const token = await getToken()
+      setAuthToken(token)
+
+      const request = {
+        ...formData,
+        imageUrls: uploadedImages,
+      }
+
+      const listing = await listingsApi.create(request)
+      navigate(`/listings/${listing.id}`)
+    } catch (err) {
+      console.error('Error creating listing:', err)
+      setError("Erreur lors de la création de l'annonce")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Container maxWidth="md">
+      <Paper sx={{ p: 4, my: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom fontWeight={700}>
+          Créer une annonce
+        </Typography>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <TextField
+            fullWidth
+            required
+            label="Titre"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
+            required
+            multiline
+            rows={4}
+            label="Description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
+            required
+            type="number"
+            label="Prix (€)"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            inputProps={{ min: 0, step: 0.01 }}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
+            required
+            label="Catégorie"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            placeholder="ex: Électronique, Mobilier, Vêtements..."
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
+            required
+            label="Localisation"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            placeholder="ex: Paris, Lyon, Marseille..."
+            sx={{ mb: 3 }}
+          />
+
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" gutterBottom fontWeight={600}>
+              Images
+            </Typography>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+              disabled={uploading}
+              sx={{ mb: 2 }}
+            >
+              {uploading ? 'Upload en cours...' : 'Ajouter des images'}
+              <input
+                type="file"
+                hidden
+                multiple
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+            </Button>
+
+            {uploadedImages.length > 0 && (
+              <ImageList cols={3} gap={8}>
+                {uploadedImages.map((url, index) => (
+                  <ImageListItem key={index}>
+                    <img src={url} alt={`Upload ${index + 1}`} loading="lazy" />
+                    <ImageListItemBar
+                      actionIcon={
+                        <IconButton
+                          sx={{ color: 'rgba(255, 255, 255, 0.8)' }}
+                          onClick={() => handleRemoveImage(index)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      }
+                    />
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            )}
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={loading || uploading}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Créer l\'annonce'}
+            </Button>
+            <Button
+              fullWidth
+              variant="outlined"
+              size="large"
+              onClick={() => navigate('/')}
+              disabled={loading}
+            >
+              Annuler
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
+  )
+}
+
