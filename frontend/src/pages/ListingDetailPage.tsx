@@ -118,7 +118,7 @@ export default function ListingDetailPage() {
               </Typography>
 
               <Typography variant="h3" color="primary" gutterBottom fontWeight={700}>
-                {listing.price.toFixed(2)} €
+                {listing.price ? listing.price.toFixed(2) : '0.00'} €
               </Typography>
 
               <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>

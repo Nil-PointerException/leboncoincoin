@@ -14,19 +14,31 @@ import {
   ImageList,
   ImageListItem,
   ImageListItemBar,
+  MenuItem,
+  Autocomplete,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import LocationOnIcon from '@mui/icons-material/LocationOn'
 import { listingsApi, uploadApi, setAuthToken } from '@/services/api'
+import { useDevAuth } from '@/hooks/useDevAuth'
+import { CATEGORIES } from '@/constants/categories'
+import { searchLocations, type LocationSuggestion } from '@/services/locationApi'
 import type { CreateListingRequest } from '@/types'
+
+const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
+              import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.trim() === ''
 
 export default function CreateListingPage() {
   const navigate = useNavigate()
-  const { getToken } = useAuth()
+  const devAuth = useDevAuth()
+  const clerkAuth = isDev ? null : useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
+  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([])
+  const [locationLoading, setLocationLoading] = useState(false)
 
   const [formData, setFormData] = useState<CreateListingRequest>({
     title: '',
@@ -53,8 +65,11 @@ export default function CreateListingPage() {
     setError(null)
 
     try {
-      const token = await getToken()
-      setAuthToken(token)
+      // Get token in prod mode only
+      if (!isDev && clerkAuth) {
+        const token = await clerkAuth.getToken()
+        setAuthToken(token)
+      }
 
       for (const file of Array.from(files)) {
         // Get presigned URL
@@ -78,14 +93,34 @@ export default function CreateListingPage() {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const handleLocationSearch = async (query: string) => {
+    if (query.length < 2) {
+      setLocationSuggestions([])
+      return
+    }
+
+    setLocationLoading(true)
+    try {
+      const suggestions = await searchLocations(query)
+      setLocationSuggestions(suggestions)
+    } catch (error) {
+      console.error('Error searching locations:', error)
+    } finally {
+      setLocationLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
     try {
-      const token = await getToken()
-      setAuthToken(token)
+      // Get token in prod mode only
+      if (!isDev && clerkAuth) {
+        const token = await clerkAuth.getToken()
+        setAuthToken(token)
+      }
 
       const request = {
         ...formData,
@@ -153,22 +188,73 @@ export default function CreateListingPage() {
           <TextField
             fullWidth
             required
+            select
             label="Catégorie"
             name="category"
             value={formData.category}
             onChange={handleChange}
-            placeholder="ex: Électronique, Mobilier, Vêtements..."
             sx={{ mb: 2 }}
-          />
+            helperText="Sélectionnez la catégorie qui correspond le mieux à votre annonce"
+          >
+            {CATEGORIES.map((category) => (
+              <MenuItem key={category} value={category}>
+                {category}
+              </MenuItem>
+            ))}
+          </TextField>
 
-          <TextField
+          <Autocomplete
             fullWidth
-            required
-            label="Localisation"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            placeholder="ex: Paris, Lyon, Marseille..."
+            freeSolo
+            options={locationSuggestions}
+            getOptionLabel={(option) => 
+              typeof option === 'string' ? option : `${option.city} (${option.postcode})`
+            }
+            renderOption={(props, option) => (
+              <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LocationOnIcon fontSize="small" color="action" />
+                <Box>
+                  <Typography variant="body2">{option.city}</Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {option.postcode} - {option.context}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+            inputValue={formData.location}
+            onInputChange={(_, newValue) => {
+              setFormData((prev) => ({ ...prev, location: newValue }))
+              handleLocationSearch(newValue)
+            }}
+            onChange={(_, newValue) => {
+              const location = typeof newValue === 'string' 
+                ? newValue 
+                : newValue 
+                  ? `${newValue.city} (${newValue.postcode})` 
+                  : ''
+              setFormData((prev) => ({ ...prev, location }))
+            }}
+            loading={locationLoading}
+            loadingText="Recherche..."
+            noOptionsText="Aucune ville trouvée"
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                required
+                label="Localisation"
+                placeholder="Commencez à taper une ville..."
+                helperText="Ex: Paris, Lyon, Marseille..."
+                InputProps={{
+                  ...params.InputProps,
+                  startAdornment: (
+                    <>
+                      <LocationOnIcon color="action" sx={{ mr: 1 }} />
+                      {params.InputProps.startAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
             sx={{ mb: 3 }}
           />
 

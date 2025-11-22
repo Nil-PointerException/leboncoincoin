@@ -7,12 +7,17 @@ import {
   Button,
   Container,
   Box,
+  Chip,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
+import { useDevAuth } from '@/hooks/useDevAuth'
 
 export default function Navbar() {
   const navigate = useNavigate()
-  const { isSignedIn } = useUser()
+  const devAuth = useDevAuth()
+  
+  // Use dev auth if Clerk is not configured, otherwise use Clerk
+  const isSignedIn = devAuth.isDev ? devAuth.isSignedIn : useUser().isSignedIn
 
   return (
     <AppBar position="sticky" elevation={1}>
@@ -26,6 +31,15 @@ export default function Navbar() {
           >
             LMC Annonces
           </Typography>
+
+          {devAuth.isDev && (
+            <Chip 
+              label="MODE DEV" 
+              color="warning" 
+              size="small" 
+              sx={{ mr: 2 }} 
+            />
+          )}
 
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             {isSignedIn ? (
@@ -42,7 +56,14 @@ export default function Navbar() {
                 <Button color="inherit" onClick={() => navigate('/profile')}>
                   Mes annonces
                 </Button>
-                <UserButton afterSignOutUrl="/" />
+                {!devAuth.isDev && <UserButton afterSignOutUrl="/" />}
+                {devAuth.isDev && (
+                  <Chip 
+                    label="dev-user-123" 
+                    size="small" 
+                    sx={{ bgcolor: 'white', color: 'primary.main' }} 
+                  />
+                )}
               </>
             ) : (
               <>

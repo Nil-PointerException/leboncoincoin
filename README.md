@@ -105,6 +105,32 @@ lmc-backend/
 
 ## 🏃 Getting Started
 
+### 🎯 Quick Start (Dev Mode)
+
+Pour un développement rapide **sans AWS ni Clerk** :
+
+```bash
+# Backend avec MinIO (S3 local) et auth désactivée
+cd backend
+chmod +x start-dev.sh
+./start-dev.sh
+```
+
+**✨ Le profil dev inclut :**
+- ✅ S3 local (MinIO) - pas besoin de compte AWS
+- ✅ Authentification désactivée - utilisateur de test automatique
+- ✅ PostgreSQL local - avec Docker
+- ✅ Console MinIO - http://localhost:9001
+- ✅ Hot reload - modifications instantanées
+
+**📖 Documentation complète :** [backend/DEV_PROFILE.md](backend/DEV_PROFILE.md)
+
+---
+
+### ⚙️ Full Setup (Production Mode)
+
+Si vous voulez tester avec Clerk et AWS S3 :
+
 ### Prerequisites
 
 - **Java 23** (for backend)

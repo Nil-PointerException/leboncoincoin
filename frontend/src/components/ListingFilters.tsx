@@ -6,9 +6,11 @@ import {
   Paper,
   Grid,
   InputAdornment,
+  MenuItem,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import FilterListIcon from '@mui/icons-material/FilterList'
+import { CATEGORIES } from '@/constants/categories'
 import type { ListingFilter } from '@/types'
 
 interface ListingFiltersProps {
@@ -50,10 +52,23 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
         <Grid item xs={12} md={2}>
           <TextField
             fullWidth
-            placeholder="Catégorie"
+            select
+            label="Catégorie"
             value={filters.category || ''}
             onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-          />
+            SelectProps={{
+              displayEmpty: true,
+            }}
+          >
+            <MenuItem value="">
+              <em>Toutes</em>
+            </MenuItem>
+            {CATEGORIES.map((category) => (
+              <MenuItem key={category} value={category}>
+                {category}
+              </MenuItem>
+            ))}
+          </TextField>
         </Grid>
 
         <Grid item xs={12} md={2}>

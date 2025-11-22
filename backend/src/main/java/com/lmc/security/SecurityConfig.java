@@ -6,7 +6,7 @@ import jakarta.inject.Inject;
 
 /**
  * Security configuration and helper utilities
- * Provides methods to extract user information from JWT tokens
+ * Provides methods to extract user information from JWT tokens or dev identity
  */
 @ApplicationScoped
 public class SecurityConfig {
@@ -15,7 +15,7 @@ public class SecurityConfig {
     SecurityIdentity securityIdentity;
 
     /**
-     * Get the current authenticated user ID from JWT subject claim
+     * Get the current authenticated user ID from JWT subject claim or dev identity
      */
     public String getCurrentUserId() {
         if (securityIdentity.isAnonymous()) {
@@ -25,14 +25,14 @@ public class SecurityConfig {
     }
 
     /**
-     * Get a specific claim from the JWT token
+     * Get a specific claim from the JWT token or dev identity attributes
      */
     public String getClaim(String claimName) {
         return securityIdentity.getAttribute(claimName);
     }
 
     /**
-     * Get user email from JWT token (Clerk provides this in the 'email' claim)
+     * Get user email from JWT token or dev identity (email attribute)
      */
     public String getCurrentUserEmail() {
         String email = getClaim("email");
@@ -43,7 +43,7 @@ public class SecurityConfig {
     }
 
     /**
-     * Get user name from JWT token (Clerk provides this in the 'name' claim)
+     * Get user name from JWT token or dev identity (name attribute)
      */
     public String getCurrentUserName() {
         String name = getClaim("name");

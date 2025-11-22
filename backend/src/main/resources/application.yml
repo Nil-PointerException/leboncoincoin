@@ -84,6 +84,129 @@ app:
     bucket-name: ${S3_BUCKET_NAME:lmc-images}
     presigned-url-expiration: 300 # 5 minutes in seconds
 
+# Development profile (local testing with MinIO and test auth)
+"%dev":
+  quarkus:
+    # Disable OIDC authentication in dev mode
+    oidc:
+      enabled: false
+    
+    # Security configuration for dev mode
+    security:
+      # Allow security annotations to work without real auth
+      auth:
+        enabled-in-dev-mode: true
+      # Use custom dev authentication mechanism
+      users:
+        embedded:
+          enabled: false
+    
+    # Use local MinIO as S3
+    s3:
+      endpoint-override: http://localhost:9000
+      aws:
+        region: us-east-1
+        credentials:
+          type: static
+          static-provider:
+            access-key-id: minioadmin
+            secret-access-key: minioadmin
+    
+    # Enable SQL logging for debugging
+    hibernate-orm:
+      log:
+        sql: true
+    
+    # Verbose logging for dev
+    log:
+      level: DEBUG
+      category:
+        "com.lmc":
+          level: DEBUG
+        "io.quarkus.oidc":
+          level: DEBUG
+    
+    # CORS for local frontend
+    http:
+      cors:
+        origins: http://localhost:5173,http://localhost:3000
+  
+  # Dev-specific app configuration
+  app:
+    s3:
+      bucket-name: lmc-images
+      presigned-url-expiration: 3600 # 1 hour for easier testing
+    dev:
+      auth-enabled: false
+      test-user-id: dev-user-123
+      test-user-email: dev@lmc.local
+      test-user-name: Dev User
+
+# Test profile (for unit/integration tests)
+"%test":
+  quarkus:
+    # Disable OIDC authentication in test mode
+    oidc:
+      enabled: false
+    
+    # Security configuration for test mode
+    security:
+      # Allow security annotations to work without real auth
+      auth:
+        enabled-in-dev-mode: true
+      # Use custom dev authentication mechanism
+      users:
+        embedded:
+          enabled: false
+    
+    # Use in-memory H2 or local PostgreSQL for tests
+    datasource:
+      db-kind: postgresql
+      username: ${DB_USERNAME:lmc_user}
+      password: ${DB_PASSWORD:lmc_password}
+      jdbc:
+        url: ${DB_URL:jdbc:postgresql://localhost:5432/lmc_db}
+    
+    # Hibernate configuration for tests
+    hibernate-orm:
+      database:
+        generation: drop-and-create
+      log:
+        sql: true
+    
+    # Flyway - skip for tests (we use drop-and-create)
+    flyway:
+      migrate-at-start: false
+    
+    # Use local MinIO for tests
+    s3:
+      endpoint-override: http://localhost:9000
+      aws:
+        region: us-east-1
+        credentials:
+          type: static
+          static-provider:
+            access-key-id: minioadmin
+            secret-access-key: minioadmin
+    
+    # Test logging
+    log:
+      level: INFO
+      category:
+        "com.lmc":
+          level: DEBUG
+  
+  # Test-specific app configuration
+  app:
+    s3:
+      bucket-name: lmc-images
+      presigned-url-expiration: 300
+    dev:
+      auth-enabled: false
+      test-user-id: test-user-123
+      test-user-email: test@lmc.local
+      test-user-name: Test User
+
 # Production profile (for AWS Lambda + RDS)
 "%prod":
   quarkus:

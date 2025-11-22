@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Container, Grid, Typography, Box, CircularProgress, Alert } from '@mui/material'
-import { listingsApi } from '@/services/api'
+import { useAuth } from '@clerk/clerk-react'
+import { listingsApi, setAuthToken } from '@/services/api'
+import { useDevAuth } from '@/hooks/useDevAuth'
 import ListingCard from '@/components/ListingCard'
 import ListingFilters from '@/components/ListingFilters'
 import type { Listing, ListingFilter } from '@/types'
 
+const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
+              import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.trim() === ''
+
 export default function HomePage() {
+  const devAuth = useDevAuth()
+  const clerkAuth = isDev ? null : useAuth()
+  
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -14,11 +22,38 @@ export default function HomePage() {
     try {
       setLoading(true)
       setError(null)
+      
+      // Set auth token if using Clerk in production
+      if (!isDev && clerkAuth) {
+        const token = await clerkAuth.getToken()
+        setAuthToken(token)
+      }
+      
       const data = await listingsApi.getAll(filters)
-      setListings(data)
-    } catch (err) {
+      console.log('API Response:', data) // Debug
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setListings(data)
+      } else {
+        console.error('API did not return an array:', data)
+        setListings([])
+        setError('Format de données incorrect reçu du serveur')
+      }
+    } catch (err: any) {
       console.error('Error fetching listings:', err)
-      setError('Erreur lors du chargement des annonces')
+      
+      // More detailed error message
+      if (err.response) {
+        console.error('Response status:', err.response.status)
+        console.error('Response data:', err.response.data)
+        setError(`Erreur serveur (${err.response.status}): ${err.response.statusText}`)
+      } else if (err.request) {
+        setError('Impossible de contacter le serveur. Vérifiez que le backend est démarré sur http://localhost:8080')
+      } else {
+        setError('Erreur lors du chargement des annonces.')
+      }
+      setListings([])
     } finally {
       setLoading(false)
     }
@@ -26,6 +61,7 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchListings()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleFilter = (filters: ListingFilter) => {

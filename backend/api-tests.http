@@ -58,7 +58,8 @@ Authorization: Bearer {{authToken}}
   "category": "Électronique",
   "location": "Paris",
   "imageUrls": [
-    "https://example.s3.eu-west-3.amazonaws.com/user123/image1.jpg",
+    "https://picsum.photos/200/300?grayscale
+",
     "https://example.s3.eu-west-3.amazonaws.com/user123/image2.jpg"
   ]
 }
@@ -247,4 +248,5 @@ Content-Type: application/json
 # 3. The base URL is set to http://localhost:8080/api (dev mode)
 # 4. Categories available: Électronique, Vêtements, Véhicules, Maison & Jardin, Loisirs & Divertissement, Autres
 # 5. For authenticated requests, you need a valid JWT token from Clerk authentication
+
 

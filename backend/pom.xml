@@ -146,8 +146,27 @@
                 <configuration>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <quarkus.test.profile>test</quarkus.test.profile>
                     </systemPropertyVariables>
+                    <!-- Ensure tests run during mvn clean install -->
+                    <skipTests>false</skipTests>
+                    <!-- Display test names -->
+                    <useFile>false</useFile>
+                    <trimStackTrace>false</trimStackTrace>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.2.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

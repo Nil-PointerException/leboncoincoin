@@ -45,6 +45,36 @@ backend/
 
 ## 🚀 Getting Started
 
+> **💡 Quick Start**: Pour un développement rapide sans configuration AWS ni Clerk, voir [DEV_PROFILE.md](./DEV_PROFILE.md)
+
+### Development Profiles
+
+LMC Backend supporte deux profils :
+
+| Profile | Usage | Auth | S3 | Database |
+|---------|-------|------|-----|----------|
+| **dev** | Développement local | ❌ Test user | MinIO local | PostgreSQL local |
+| **prod** | Production | ✅ Clerk OIDC | AWS S3 | AWS RDS |
+
+### Quick Start (Dev Profile) 🎯
+
+```bash
+# 1. Démarrer PostgreSQL + MinIO
+docker-compose up -d
+
+# 2. Lancer en mode dev (pas de config AWS/Clerk nécessaire)
+mvn quarkus:dev
+
+# 3. Tester l'API
+curl http://localhost:8080/api/listings
+```
+
+**➡️ Documentation complète:** [DEV_PROFILE.md](./DEV_PROFILE.md)
+
+### Full Setup (Prod Profile) ⚙️
+
+Si vous voulez tester avec Clerk et AWS S3 :
+
 ### 1. Start Local PostgreSQL Database
 
 ```bash
@@ -254,16 +284,36 @@ Your Lambda function **must** be in the same VPC as RDS:
 
 ## 🧪 Testing
 
+### Quick Start
+
 ```bash
-# Run all tests
+# Run all integration tests
 mvn test
 
-# Run with coverage
-mvn verify
+# Or use the script (starts PostgreSQL automatically)
+.\run-tests.ps1              # Windows
+./run-tests.sh               # Linux/Mac
 
-# Test database connection
-curl http://localhost:8080/api/health
+# Tests run automatically with install
+mvn clean install
 ```
+
+### What's Tested
+
+✅ **Happy Path** : Create → Read → Update → Delete  
+✅ **Filters** : Category, Location, Price, Search  
+✅ **Validation** : Required fields, data types  
+✅ **Errors** : 404, 400, 422  
+✅ **Authentication** : Auto test user injection  
+
+### Test Coverage
+
+- `ListingResourceTest` - 12 tests covering full CRUD lifecycle
+- RestAssured integration tests
+- No JWT tokens required (auto test user)
+- PostgreSQL required (via docker-compose)
+
+**📖 Complete guide:** [TEST_QUICK_START.md](./TEST_QUICK_START.md) | [TESTING.md](./TESTING.md)
 
 ## 🔐 Security
 

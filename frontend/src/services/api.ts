@@ -1,13 +1,17 @@
 import axios from 'axios'
 import type { Listing, User, CreateListingRequest, PresignedUrlResponse } from '@/types'
 
+// Use proxy in dev mode, direct URL in production
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+
+console.log('API Base URL:', API_BASE_URL)
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  validateStatus: (status) => status < 500, // Don't throw on 4xx errors
 })
 
 // Request interceptor to add auth token

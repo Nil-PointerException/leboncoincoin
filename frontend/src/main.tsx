@@ -8,20 +8,27 @@ import theme from './theme'
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
-if (!clerkPubKey) {
-  throw new Error('Missing Clerk Publishable Key')
-}
+// Dev mode: Clerk is optional when backend auth is disabled
+const isDev = !clerkPubKey || clerkPubKey.trim() === ''
+
+const AppContent = () => (
+  <BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <App />
+    </ThemeProvider>
+  </BrowserRouter>
+)
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={clerkPubKey}>
-      <BrowserRouter>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <App />
-        </ThemeProvider>
-      </BrowserRouter>
-    </ClerkProvider>
+    {isDev ? (
+      <AppContent />
+    ) : (
+      <ClerkProvider publishableKey={clerkPubKey!}>
+        <AppContent />
+      </ClerkProvider>
+    )}
   </React.StrictMode>,
 )
 
