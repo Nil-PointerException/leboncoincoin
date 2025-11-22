@@ -1,5 +1,6 @@
-package com.lmc.domain;
+package com.lmc.entity;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -10,43 +11,38 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "listings", indexes = {
-    @Index(name = "idx_user_id", columnList = "user_id"),
-    @Index(name = "idx_category", columnList = "category"),
-    @Index(name = "idx_location", columnList = "location"),
-    @Index(name = "idx_created_at", columnList = "created_at")
-})
-public class Listing {
+@Table(name = "listings")
+public class Listing extends PanacheEntityBase {
 
     @Id
     @Column(name = "id", nullable = false, length = 36)
-    private String id;
+    public String id;
 
     @Column(name = "title", nullable = false, length = 255)
-    private String title;
+    public String title;
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
-    private String description;
+    public String description;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    public BigDecimal price;
 
     @Column(name = "category", nullable = false, length = 100)
-    private String category;
+    public String category;
 
     @Column(name = "location", nullable = false, length = 255)
-    private String location;
+    public String location;
 
     @ElementCollection
     @CollectionTable(name = "listing_images", joinColumns = @JoinColumn(name = "listing_id"))
     @Column(name = "image_url", length = 500)
-    private List<String> imageUrls = new ArrayList<>();
+    public List<String> imageUrls = new ArrayList<>();
 
     @Column(name = "user_id", nullable = false, length = 255)
-    private String userId;
+    public String userId;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    public Instant createdAt;
 
     public Listing() {
     }
@@ -72,80 +68,6 @@ public class Listing {
         if (createdAt == null) {
             createdAt = Instant.now();
         }
-    }
-
-    // Getters and Setters
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public List<String> getImageUrls() {
-        return imageUrls;
-    }
-
-    public void setImageUrls(List<String> imageUrls) {
-        this.imageUrls = imageUrls;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
     }
 
     @Override
@@ -174,3 +96,4 @@ public class Listing {
                 '}';
     }
 }
+

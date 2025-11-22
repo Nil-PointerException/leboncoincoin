@@ -1,6 +1,6 @@
 package com.lmc.repository;
 
-import com.lmc.domain.Listing;
+import com.lmc.entity.Listing;
 import com.lmc.dto.ListingFilter;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;

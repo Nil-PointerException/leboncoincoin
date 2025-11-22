@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { ClerkProvider } from '@clerk/clerk-react'
 import { CssBaseline, ThemeProvider } from '@mui/material'
+import { DevAuthProvider } from './contexts/DevAuthContext'
 import App from './App'
 import theme from './theme'
 
@@ -23,7 +24,9 @@ const AppContent = () => (
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     {isDev ? (
-      <AppContent />
+      <DevAuthProvider>
+        <AppContent />
+      </DevAuthProvider>
     ) : (
       <ClerkProvider publishableKey={clerkPubKey!}>
         <AppContent />

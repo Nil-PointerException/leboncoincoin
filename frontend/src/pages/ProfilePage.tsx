@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useAuth, useUser } from '@clerk/clerk-react'
+import { useAuthSafe } from '@/hooks/useAuthSafe'
+import { useUserSafe } from '@/hooks/useUserSafe'
 import {
   Container,
   Typography,
@@ -12,7 +13,6 @@ import {
   Chip,
 } from '@mui/material'
 import { userApi, setAuthToken } from '@/services/api'
-import { useDevAuth } from '@/hooks/useDevAuth'
 import ListingCard from '@/components/ListingCard'
 import type { Listing } from '@/types'
 
@@ -20,9 +20,8 @@ const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
               import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.trim() === ''
 
 export default function ProfilePage() {
-  const devAuth = useDevAuth()
-  const clerkUser = isDev ? null : useUser()
-  const clerkAuth = isDev ? null : useAuth()
+  const { user } = useUserSafe()
+  const { getToken } = useAuthSafe()
   
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,11 +33,9 @@ export default function ProfilePage() {
         setLoading(true)
         setError(null)
         
-        // Get token in prod mode only
-        if (!isDev && clerkAuth) {
-          const token = await clerkAuth.getToken()
-          setAuthToken(token)
-        }
+        // Get token for authentication
+        const token = await getToken()
+        setAuthToken(token)
         
         const data = await userApi.getCurrentUserListings()
         console.log('Profile API Response:', data) // Debug
@@ -73,11 +70,10 @@ export default function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Get user info from Clerk or dev mode
-  const user = isDev ? null : clerkUser?.user
-  const displayName = isDev ? 'Dev User' : (user?.fullName || 'Mon Profil')
-  const displayEmail = isDev ? 'dev@lmc.local' : (user?.primaryEmailAddress?.emailAddress || '')
-  const displayAvatar = isDev ? undefined : user?.imageUrl
+  // Get display info
+  const displayName = user?.fullName || 'Mon Profil'
+  const displayEmail = user?.primaryEmailAddress?.emailAddress || ''
+  const displayAvatar = user?.imageUrl
 
   return (
     <Container maxWidth="lg">

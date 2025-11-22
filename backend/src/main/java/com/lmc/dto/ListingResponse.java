@@ -1,6 +1,6 @@
 package com.lmc.dto;
 
-import com.lmc.domain.Listing;
+import com.lmc.entity.Listing;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -19,15 +19,15 @@ public record ListingResponse(
 ) {
     public static ListingResponse from(Listing listing) {
         return new ListingResponse(
-            listing.getId(),
-            listing.getTitle(),
-            listing.getDescription(),
-            listing.getPrice(),
-            listing.getCategory(),
-            listing.getLocation(),
-            listing.getImageUrls(),
-            listing.getUserId(),
-            listing.getCreatedAt()
+            listing.id,
+            listing.title,
+            listing.description,
+            listing.price,
+            listing.category,
+            listing.location,
+            listing.imageUrls,
+            listing.userId,
+            listing.createdAt
         );
     }
 }

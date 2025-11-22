@@ -1,6 +1,6 @@
 package com.lmc.service;
 
-import com.lmc.domain.Listing;
+import com.lmc.entity.Listing;
 import com.lmc.dto.CreateListingRequest;
 import com.lmc.dto.ListingFilter;
 import com.lmc.exception.ResourceNotFoundException;
@@ -69,7 +69,7 @@ public class ListingService {
         Listing listing = getListingById(id);
         
         // Verify ownership
-        if (!listing.getUserId().equals(userId)) {
+        if (!listing.userId.equals(userId)) {
             throw new SecurityException("You are not authorized to delete this listing");
         }
         

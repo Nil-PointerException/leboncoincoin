@@ -6,6 +6,8 @@ import HomePage from './pages/HomePage'
 import ListingDetailPage from './pages/ListingDetailPage'
 import CreateListingPage from './pages/CreateListingPage'
 import ProfilePage from './pages/ProfilePage'
+import ConversationsPage from './pages/ConversationsPage'
+import ChatPage from './pages/ChatPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
@@ -52,6 +54,22 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conversations"
+          element={
+            <ProtectedRoute>
+              <ConversationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/conversations/:conversationId"
+          element={
+            <ProtectedRoute>
+              <ChatPage />
             </ProtectedRoute>
           }
         />

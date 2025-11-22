@@ -1,6 +1,6 @@
 package com.lmc.repository;
 
-import com.lmc.domain.User;
+import com.lmc.entity.User;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 

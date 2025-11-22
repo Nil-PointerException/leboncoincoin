@@ -1,25 +1,26 @@
-package com.lmc.domain;
+package com.lmc.entity;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User extends PanacheEntityBase {
 
     @Id
     @Column(name = "id", nullable = false, length = 255)
-    private String id;
+    public String id;
 
     @Column(name = "email", nullable = false, unique = true, length = 255)
-    private String email;
+    public String email;
 
     @Column(name = "name", nullable = false, length = 255)
-    private String name;
+    public String name;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    public Instant createdAt;
 
     public User() {
     }
@@ -36,40 +37,6 @@ public class User {
         if (createdAt == null) {
             createdAt = Instant.now();
         }
-    }
-
-    // Getters and Setters
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
     }
 
     @Override
@@ -95,3 +62,4 @@ public class User {
                 '}';
     }
 }
+

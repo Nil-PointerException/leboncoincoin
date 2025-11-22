@@ -1,6 +1,6 @@
 package com.lmc.resource;
 
-import com.lmc.domain.User;
+import com.lmc.entity.User;
 import com.lmc.dto.ListingResponse;
 import com.lmc.dto.UserResponse;
 import com.lmc.security.SecurityConfig;

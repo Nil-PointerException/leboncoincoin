@@ -1,6 +1,6 @@
 package com.lmc.dto;
 
-import com.lmc.domain.User;
+import com.lmc.entity.User;
 
 import java.time.Instant;
 
@@ -12,10 +12,10 @@ public record UserResponse(
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(
-            user.getId(),
-            user.getEmail(),
-            user.getName(),
-            user.getCreatedAt()
+            user.id,
+            user.email,
+            user.name,
+            user.createdAt
         );
     }
 }

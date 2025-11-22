@@ -1,6 +1,6 @@
 package com.lmc.service;
 
-import com.lmc.domain.User;
+import com.lmc.entity.User;
 import com.lmc.repository.UserRepository;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,8 +22,8 @@ public class UserService {
         Optional<User> existingUser = userRepository.findByIdOptional(id);
         if (existingUser.isPresent()) {
             User user = existingUser.get();
-            user.setEmail(email);
-            user.setName(name);
+            user.email = email;
+            user.name = name;
             userRepository.persist(user);
             return user;
         }

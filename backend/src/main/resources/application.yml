@@ -142,6 +142,61 @@ app:
       test-user-email: dev@lmc.local
       test-user-name: Dev User
 
+# Clerk profile (for local development with Clerk authentication)
+"%clerk":
+  quarkus:
+    # Enable OIDC authentication with Clerk
+    oidc:
+      enabled: true
+      auth-server-url: ${CLERK_AUTH_SERVER_URL:https://YOUR_DOMAIN.clerk.accounts.dev}
+      client-id: ${CLERK_CLIENT_ID:YOUR_DOMAIN}
+      token:
+        issuer: ${CLERK_ISSUER:https://YOUR_DOMAIN.clerk.accounts.dev}
+        audience: ${CLERK_AUDIENCE:}
+      tls:
+        verification: none  # Use 'none' for local dev, 'required' for production
+    
+    # Use local MinIO as S3
+    s3:
+      endpoint-override: http://localhost:9000
+      aws:
+        region: us-east-1
+        credentials:
+          type: static
+          static-provider:
+            access-key-id: minioadmin
+            secret-access-key: minioadmin
+    
+    # Enable SQL logging for debugging
+    hibernate-orm:
+      log:
+        sql: true
+    
+    # Verbose logging
+    log:
+      level: DEBUG
+      category:
+        "com.lmc":
+          level: DEBUG
+        "io.quarkus.oidc":
+          level: DEBUG
+        "io.quarkus.security":
+          level: DEBUG
+    
+    # CORS for local frontend
+    http:
+      cors:
+        origins: http://localhost:5173,http://localhost:3000
+  
+  # Clerk profile app configuration
+  app:
+    s3:
+      bucket-name: lmc-images
+      presigned-url-expiration: 3600
+    dev:
+      auth-enabled: true  # Disable dev auth, use real OIDC
+      test-user-id: ""
+
 # Test profile (for unit/integration tests)
 "%test":
   quarkus:

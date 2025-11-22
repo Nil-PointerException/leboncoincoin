@@ -38,22 +38,3 @@ CREATE TABLE listing_images (
 
 CREATE INDEX idx_listing_images_listing_id ON listing_images(listing_id);
 
--- Create messages table (for future use)
-CREATE TABLE messages (
-    id VARCHAR(36) PRIMARY KEY,
-    listing_id VARCHAR(36) NOT NULL,
-    from_user_id VARCHAR(255) NOT NULL,
-    to_user_id VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_messages_listing FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE,
-    CONSTRAINT fk_messages_from_user FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_messages_to_user FOREIGN KEY (to_user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Create indexes for messages
-CREATE INDEX idx_messages_listing_id ON messages(listing_id);
-CREATE INDEX idx_messages_from_user_id ON messages(from_user_id);
-CREATE INDEX idx_messages_to_user_id ON messages(to_user_id);
-CREATE INDEX idx_messages_created_at ON messages(created_at DESC);
-

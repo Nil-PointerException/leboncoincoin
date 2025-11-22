@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useUser, UserButton } from '@clerk/clerk-react'
+import { UserButton } from '@clerk/clerk-react'
 import {
   AppBar,
   Toolbar,
@@ -10,14 +10,15 @@ import {
   Chip,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
-import { useDevAuth } from '@/hooks/useDevAuth'
+import MessageIcon from '@mui/icons-material/Message'
+import { useUserSafe } from '@/hooks/useUserSafe'
+
+const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
+              import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.trim() === ''
 
 export default function Navbar() {
   const navigate = useNavigate()
-  const devAuth = useDevAuth()
-  
-  // Use dev auth if Clerk is not configured, otherwise use Clerk
-  const isSignedIn = devAuth.isDev ? devAuth.isSignedIn : useUser().isSignedIn
+  const { isSignedIn, user } = useUserSafe()
 
   return (
     <AppBar position="sticky" elevation={1}>
@@ -32,12 +33,12 @@ export default function Navbar() {
             LMC Annonces
           </Typography>
 
-          {devAuth.isDev && (
+          {isDev && (
             <Chip 
               label="MODE DEV" 
               color="warning" 
               size="small" 
-              sx={{ mr: 2 }} 
+              sx={{ mr: 2, fontWeight: 'bold' }} 
             />
           )}
 
@@ -56,13 +57,17 @@ export default function Navbar() {
                 <Button color="inherit" onClick={() => navigate('/profile')}>
                   Mes annonces
                 </Button>
-                {!devAuth.isDev && <UserButton afterSignOutUrl="/" />}
-                {devAuth.isDev && (
+                <Button color="inherit" startIcon={<MessageIcon />} onClick={() => navigate('/conversations')}>
+                  Messagerie
+                </Button>
+                {isDev ? (
                   <Chip 
-                    label="dev-user-123" 
+                    label={user?.fullName || 'Dev User'} 
                     size="small" 
-                    sx={{ bgcolor: 'white', color: 'primary.main' }} 
+                    sx={{ bgcolor: 'white', color: 'primary.main', fontWeight: 'bold' }} 
                   />
+                ) : (
+                  <UserButton afterSignOutUrl="/" />
                 )}
               </>
             ) : (

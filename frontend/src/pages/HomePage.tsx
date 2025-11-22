@@ -1,19 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Container, Grid, Typography, Box, CircularProgress, Alert } from '@mui/material'
-import { useAuth } from '@clerk/clerk-react'
-import { listingsApi, setAuthToken } from '@/services/api'
-import { useDevAuth } from '@/hooks/useDevAuth'
+import { listingsApi } from '@/services/api'
 import ListingCard from '@/components/ListingCard'
 import ListingFilters from '@/components/ListingFilters'
 import type { Listing, ListingFilter } from '@/types'
 
-const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
-              import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.trim() === ''
-
 export default function HomePage() {
-  const devAuth = useDevAuth()
-  const clerkAuth = isDev ? null : useAuth()
-  
   const [listings, setListings] = useState<Listing[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -23,22 +15,20 @@ export default function HomePage() {
       setLoading(true)
       setError(null)
       
-      // Set auth token if using Clerk in production
-      if (!isDev && clerkAuth) {
-        const token = await clerkAuth.getToken()
-        setAuthToken(token)
-      }
+      // GET /listings is a public endpoint - no auth needed
       
       const data = await listingsApi.getAll(filters)
-      console.log('API Response:', data) // Debug
       
       // Ensure data is an array
       if (Array.isArray(data)) {
         setListings(data)
       } else {
-        console.error('API did not return an array:', data)
+        console.error('❌ API did not return an array')
+        console.error('   Type:', typeof data)
+        console.error('   Value:', data)
+        console.error('   💡 Vérifiez que le backend est démarré avec le bon profil (dev ou clerk)')
         setListings([])
-        setError('Format de données incorrect reçu du serveur')
+        setError('Format de données incorrect reçu du serveur. Vérifiez que le backend est configuré correctement.')
       }
     } catch (err: any) {
       console.error('Error fetching listings:', err)

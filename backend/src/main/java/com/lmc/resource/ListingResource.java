@@ -1,6 +1,6 @@
 package com.lmc.resource;
 
-import com.lmc.domain.Listing;
+import com.lmc.entity.Listing;
 import com.lmc.dto.CreateListingRequest;
 import com.lmc.dto.ListingFilter;
 import com.lmc.dto.ListingResponse;

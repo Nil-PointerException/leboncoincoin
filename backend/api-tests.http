@@ -181,6 +181,89 @@ Accept: application/json
 Authorization: Bearer {{authToken}}
 
 ### ==============================================
+### CONVERSATIONS (Authenticated endpoints)
+### ==============================================
+
+### Get all conversations for current user
+GET {{baseUrl}}/conversations
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### Get conversation by ID
+GET {{baseUrl}}/conversations/REPLACE_WITH_CONVERSATION_ID
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### Create a new conversation (contact seller)
+POST {{baseUrl}}/conversations
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "listingId": "REPLACE_WITH_LISTING_ID"
+}
+
+### ==============================================
+### MESSAGES (Authenticated endpoints)
+### ==============================================
+
+### Get all messages in a conversation
+GET {{baseUrl}}/conversations/REPLACE_WITH_CONVERSATION_ID/messages
+Accept: application/json
+Authorization: Bearer {{authToken}}
+
+### Send a message in a conversation
+POST {{baseUrl}}/conversations/REPLACE_WITH_CONVERSATION_ID/messages
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "content": "Bonjour, est-ce que l'article est toujours disponible ?"
+}
+
+### Send a follow-up message
+POST {{baseUrl}}/conversations/REPLACE_WITH_CONVERSATION_ID/messages
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "content": "Je suis intéressé pour le récupérer ce week-end si possible."
+}
+
+### Mark a message as read
+PUT {{baseUrl}}/messages/REPLACE_WITH_MESSAGE_ID/read
+Authorization: Bearer {{authToken}}
+
+### ==============================================
+### MESSAGING WORKFLOW (Complete example)
+### ==============================================
+
+### Step 1: Create a listing (as seller)
+# POST {{baseUrl}}/listings
+# Save the listing ID
+
+### Step 2: Contact seller (as buyer, use different authToken)
+# POST {{baseUrl}}/conversations with the listing ID
+# Save the conversation ID
+
+### Step 3: Send initial message (as buyer)
+# POST {{baseUrl}}/conversations/{conversationId}/messages
+# "Bonjour, l'article est-il toujours disponible ?"
+
+### Step 4: Seller checks conversations
+# GET {{baseUrl}}/conversations (should see 1 unread message)
+
+### Step 5: Seller reads messages
+# GET {{baseUrl}}/conversations/{conversationId}/messages
+
+### Step 6: Mark messages as read
+# PUT {{baseUrl}}/messages/{messageId}/read
+
+### Step 7: Seller replies
+# POST {{baseUrl}}/conversations/{conversationId}/messages
+# "Oui, toujours disponible ! Quand voulez-vous venir ?"
+
+### ==============================================
 ### ERROR SCENARIOS (for testing validation)
 ### ==============================================
 
@@ -245,8 +328,30 @@ Content-Type: application/json
 
 # 1. Replace {{authToken}} with your actual JWT token from Clerk
 # 2. Replace REPLACE_WITH_ACTUAL_LISTING_ID with real listing IDs from your database
-# 3. The base URL is set to http://localhost:8080/api (dev mode)
-# 4. Categories available: Électronique, Vêtements, Véhicules, Maison & Jardin, Loisirs & Divertissement, Autres
-# 5. For authenticated requests, you need a valid JWT token from Clerk authentication
+# 3. Replace REPLACE_WITH_CONVERSATION_ID with real conversation IDs
+# 4. Replace REPLACE_WITH_MESSAGE_ID with real message IDs
+# 5. The base URL is set to http://localhost:8080/api (dev mode)
+# 6. Categories available: Électronique, Vêtements, Véhicules, Maison & Jardin, Loisirs & Divertissement, Autres
+# 7. For authenticated requests, you need a valid JWT token from Clerk authentication
+# 8. In dev mode (without Clerk), all endpoints are accessible without authentication
+
+### ==============================================
+### MESSAGING FEATURE OVERVIEW
+### ==============================================
+
+# The messaging feature allows buyers to contact sellers about listings.
+# 
+# Workflow:
+# 1. Buyer creates a conversation by contacting a seller (POST /api/conversations)
+# 2. System creates a unique conversation linked to the listing
+# 3. Both buyer and seller can send messages (POST /api/conversations/{id}/messages)
+# 4. Both can view all messages in the conversation (GET /api/conversations/{id}/messages)
+# 5. Messages can be marked as read (PUT /api/messages/{id}/read)
+# 6. Unread message count is tracked per conversation
+#
+# Data model:
+# - Conversation: Links a buyer, seller, and listing
+# - Message: Contains content, sender, timestamp, and read status
+# - When a listing is deleted, all conversations and messages are cascade deleted
 
 

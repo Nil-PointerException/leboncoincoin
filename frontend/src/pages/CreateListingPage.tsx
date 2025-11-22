@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@clerk/clerk-react'
+import { useAuthSafe } from '@/hooks/useAuthSafe'
 import {
   Container,
   Paper,
@@ -21,18 +21,14 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import { listingsApi, uploadApi, setAuthToken } from '@/services/api'
-import { useDevAuth } from '@/hooks/useDevAuth'
 import { CATEGORIES } from '@/constants/categories'
 import { searchLocations, type LocationSuggestion } from '@/services/locationApi'
 import type { CreateListingRequest } from '@/types'
 
-const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
-              import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.trim() === ''
-
 export default function CreateListingPage() {
   const navigate = useNavigate()
-  const devAuth = useDevAuth()
-  const clerkAuth = isDev ? null : useAuth()
+  const { getToken } = useAuthSafe()
+  
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
@@ -65,11 +61,9 @@ export default function CreateListingPage() {
     setError(null)
 
     try {
-      // Get token in prod mode only
-      if (!isDev && clerkAuth) {
-        const token = await clerkAuth.getToken()
-        setAuthToken(token)
-      }
+      // Get token for authentication
+      const token = await getToken()
+      setAuthToken(token)
 
       for (const file of Array.from(files)) {
         // Get presigned URL
@@ -116,11 +110,9 @@ export default function CreateListingPage() {
     setError(null)
 
     try {
-      // Get token in prod mode only
-      if (!isDev && clerkAuth) {
-        const token = await clerkAuth.getToken()
-        setAuthToken(token)
-      }
+      // Get token for authentication
+      const token = await getToken()
+      setAuthToken(token)
 
       const request = {
         ...formData,

@@ -17,11 +17,38 @@ const api = axios.create({
 // Request interceptor to add auth token
 export const setAuthToken = (token: string | null) => {
   if (token) {
+    console.log('Setting auth token:', token.substring(0, 20) + '...')
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`
   } else {
+    console.log('Clearing auth token')
     delete api.defaults.headers.common['Authorization']
   }
 }
+
+// Response interceptor for debugging
+api.interceptors.response.use(
+  (response) => {
+    // Log only errors for cleaner console
+    return response
+  },
+  (error) => {
+    console.error('❌ API Error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      url: error.config?.url,
+      message: error.message
+    })
+    
+    // Provide helpful hints for common errors
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.error('   💡 Authentification requise. Vérifiez votre configuration Clerk.')
+    } else if (!error.response) {
+      console.error('   💡 Backend non accessible. Vérifiez que le backend est démarré.')
+    }
+    
+    return Promise.reject(error)
+  }
+)
 
 // Listings API
 export const listingsApi = {
