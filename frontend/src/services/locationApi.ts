@@ -62,3 +62,4 @@ export function formatLocationLabel(suggestion: LocationSuggestion): string {
   return `${suggestion.city} (${suggestion.postcode})`
 }
 
+

@@ -3,36 +3,36 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: lmc-postgres
+    container_name: leboncoincoin-postgres
     environment:
-      POSTGRES_DB: lmc_db
-      POSTGRES_USER: lmc_user
-      POSTGRES_PASSWORD: lmc_password
+      POSTGRES_DB: leboncoincoin_db
+      POSTGRES_USER: leboncoincoin_user
+      POSTGRES_PASSWORD: leboncoincoin_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - lmc-network
+      - leboncoincoin-network
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: lmc-pgadmin
+    container_name: leboncoincoin-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@lmc.com
+      PGADMIN_DEFAULT_EMAIL: admin@leboncoincoin.com
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
       - "5050:80"
     networks:
-      - lmc-network
+      - leboncoincoin-network
     depends_on:
       - postgres
 
   # MinIO (S3 Local) for dev profile
   minio:
     image: minio/minio:latest
-    container_name: lmc-minio
+    container_name: leboncoincoin-minio
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -43,7 +43,7 @@ services:
     volumes:
       - minio_data:/data
     networks:
-      - lmc-network
+      - leboncoincoin-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
@@ -53,25 +53,41 @@ services:
   # MinIO Client - Create bucket on startup
   createbuckets:
     image: minio/mc:latest
-    container_name: lmc-minio-init
+    container_name: leboncoincoin-minio-init
     depends_on:
       - minio
     networks:
-      - lmc-network
+      - leboncoincoin-network
     entrypoint: >
       /bin/sh -c "
       sleep 5;
       /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
-      /usr/bin/mc mb myminio/lmc-images --ignore-existing;
-      /usr/bin/mc anonymous set download myminio/lmc-images;
+      /usr/bin/mc mb myminio/leboncoincoin-images --ignore-existing;
+      /usr/bin/mc anonymous set download myminio/leboncoincoin-images;
       exit 0;
       "
+
+  # MailHog (SMTP server for dev - intercepts emails)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: leboncoincoin-mailhog
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web UI
+    networks:
+      - leboncoincoin-network
+    environment:
+      MH_STORAGE: maildir
+      MH_MAILDIR_PATH: /maildir
+    volumes:
+      - mailhog_data:/maildir
 
 volumes:
   postgres_data:
   minio_data:
+  mailhog_data:
 
 networks:
-  lmc-network:
+  leboncoincoin-network:
     driver: bridge
 

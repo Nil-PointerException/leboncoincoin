@@ -8,6 +8,7 @@ import CreateListingPage from './pages/CreateListingPage'
 import ProfilePage from './pages/ProfilePage'
 import ConversationsPage from './pages/ConversationsPage'
 import ChatPage from './pages/ChatPage'
+import FavoritesPage from './pages/FavoritesPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
@@ -54,6 +55,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute>
+              <FavoritesPage />
             </ProtectedRoute>
           }
         />

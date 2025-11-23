@@ -1,6 +1,6 @@
 quarkus:
   application:
-    name: lmc-backend
+    name: leboncoincoin-backend
 
   # Lambda HTTP configuration
   lambda:
@@ -30,10 +30,10 @@ quarkus:
   # Database (PostgreSQL)
   datasource:
     db-kind: postgresql
-    username: ${DB_USERNAME:lmc_user}
-    password: ${DB_PASSWORD:lmc_password}
+    username: ${DB_USERNAME:leboncoincoin_user}
+    password: ${DB_PASSWORD:leboncoincoin_password}
     jdbc:
-      url: ${DB_URL:jdbc:postgresql://localhost:5432/lmc_db}
+      url: ${DB_URL:jdbc:postgresql://localhost:5432/leboncoincoin_db}
       max-size: 16
 
   # Hibernate ORM
@@ -56,6 +56,25 @@ quarkus:
       region: ${AWS_REGION:eu-west-3}
       credentials:
         type: default
+    # Enable path-style access for MinIO compatibility
+    path-style-access: ${S3_PATH_STYLE:false}
+
+  # SES (for production email sending)
+  ses:
+    aws:
+      region: ${AWS_REGION:eu-west-3}
+      credentials:
+        type: default
+
+  # Mailer (SMTP for development)
+  mailer:
+    from: ${EMAIL_FROM:noreply@leboncoincoin.com}
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    start-tls: ${SMTP_START_TLS:DISABLED}
+    auth-methods: ${SMTP_AUTH_METHODS:}
 
   # HTTP
   http:
@@ -72,7 +91,7 @@ quarkus:
   log:
     level: INFO
     category:
-      "com.lmc":
+      "com.leboncoincoin":
         level: DEBUG
     console:
       enable: true
@@ -81,8 +100,15 @@ quarkus:
 # Application-specific configuration
 app:
   s3:
-    bucket-name: ${S3_BUCKET_NAME:lmc-images}
+    bucket-name: ${S3_BUCKET_NAME:leboncoincoin-images}
     presigned-url-expiration: 300 # 5 minutes in seconds
+  email:
+    provider: ${EMAIL_PROVIDER:smtp} # "smtp" for dev (MailHog), "ses" for prod
+    from: ${EMAIL_FROM:noreply@leboncoincoin.com}
+    from-name: ${EMAIL_FROM_NAME:LeBonCoinCoin}
+    welcome-enabled: ${EMAIL_WELCOME_ENABLED:true}
+  messaging:
+    allow-self-messaging: ${ALLOW_SELF_MESSAGING:false}
 
 # Development profile (local testing with MinIO and test auth)
 "%dev":
@@ -121,7 +147,7 @@ app:
     log:
       level: DEBUG
       category:
-        "com.lmc":
+        "com.leboncoincoin":
           level: DEBUG
         "io.quarkus.oidc":
           level: DEBUG
@@ -134,12 +160,16 @@ app:
   # Dev-specific app configuration
   app:
     s3:
-      bucket-name: lmc-images
+      bucket-name: leboncoincoin-images
       presigned-url-expiration: 3600 # 1 hour for easier testing
+    email:
+      provider: smtp # Use MailHog in dev
+      from: dev@leboncoincoin.local
+      from-name: LeBonCoinCoin (Dev)
     dev:
       auth-enabled: false
       test-user-id: dev-user-123
-      test-user-email: dev@lmc.local
+      test-user-email: dev@leboncoincoin.local
       test-user-name: Dev User
 
 # Clerk profile (for local development with Clerk authentication)
@@ -159,6 +189,7 @@ app:
     # Use local MinIO as S3
     s3:
       endpoint-override: http://localhost:9000
+      path-style-access: true
       aws:
         region: us-east-1
         credentials:
@@ -176,7 +207,7 @@ app:
     log:
       level: DEBUG
       category:
-        "com.lmc":
+        "com.leboncoincoin":
           level: DEBUG
         "io.quarkus.oidc":
           level: DEBUG
@@ -191,8 +222,12 @@ app:
   # Clerk profile app configuration
   app:
     s3:
-      bucket-name: lmc-images
+      bucket-name: leboncoincoin-images
       presigned-url-expiration: 3600
+    email:
+      provider: smtp # Use MailHog in clerk profile too
+      from: dev@leboncoincoin.local
+      from-name: LeBonCoinCoin (Clerk Dev)
     dev:
       auth-enabled: true  # Disable dev auth, use real OIDC
       test-user-id: ""
@@ -217,10 +252,10 @@ app:
     # Use in-memory H2 or local PostgreSQL for tests
     datasource:
       db-kind: postgresql
-      username: ${DB_USERNAME:lmc_user}
-      password: ${DB_PASSWORD:lmc_password}
+      username: ${DB_USERNAME:leboncoincoin_user}
+      password: ${DB_PASSWORD:leboncoincoin_password}
       jdbc:
-        url: ${DB_URL:jdbc:postgresql://localhost:5432/lmc_db}
+        url: ${DB_URL:jdbc:postgresql://localhost:5432/leboncoincoin_db}
     
     # Hibernate configuration for tests
     hibernate-orm:
@@ -236,6 +271,7 @@ app:
     # Use local MinIO for tests
     s3:
       endpoint-override: http://localhost:9000
+      path-style-access: true
       aws:
         region: us-east-1
         credentials:
@@ -248,18 +284,25 @@ app:
     log:
       level: INFO
       category:
-        "com.lmc":
+        "com.leboncoincoin":
           level: DEBUG
   
   # Test-specific app configuration
   app:
     s3:
-      bucket-name: lmc-images
+      bucket-name: leboncoincoin-images
       presigned-url-expiration: 300
+    email:
+      provider: smtp # Use mock SMTP in tests
+      from: test@leboncoincoin.local
+      from-name: LeBonCoinCoin (Test)
+      welcome-enabled: false # Disable welcome emails in tests
+    messaging:
+      allow-self-messaging: true # Allow same user to be buyer and seller in tests
     dev:
       auth-enabled: false
       test-user-id: test-user-123
-      test-user-email: test@lmc.local
+      test-user-email: test@leboncoincoin.local
       test-user-name: Test User
 
 # Production profile (for AWS Lambda + RDS)
@@ -278,6 +321,6 @@ app:
     log:
       level: INFO
       category:
-        "com.lmc":
+        "com.leboncoincoin":
           level: INFO
 

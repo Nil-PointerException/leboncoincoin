@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import MessageIcon from '@mui/icons-material/Message'
+import FavoriteIcon from '@mui/icons-material/Favorite'
 import { useUserSafe } from '@/hooks/useUserSafe'
 
 const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
@@ -27,10 +28,10 @@ export default function Navbar() {
           <Typography
             variant="h6"
             component="div"
-            sx={{ flexGrow: 1, cursor: 'pointer', fontWeight: 700 }}
+            sx={{ flexGrow: 1, cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}
             onClick={() => navigate('/')}
           >
-            LMC Annonces
+            🦆 LeBonCoinCoin
           </Typography>
 
           {isDev && (
@@ -56,6 +57,9 @@ export default function Navbar() {
                 </Button>
                 <Button color="inherit" onClick={() => navigate('/profile')}>
                   Mes annonces
+                </Button>
+                <Button color="inherit" startIcon={<FavoriteIcon />} onClick={() => navigate('/favorites')}>
+                  Favoris
                 </Button>
                 <Button color="inherit" startIcon={<MessageIcon />} onClick={() => navigate('/conversations')}>
                   Messagerie

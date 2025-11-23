@@ -1,6 +1,7 @@
 ### Variables
 @baseUrl = http://localhost:8080/api
 @authToken = YOUR_JWT_TOKEN_HERE
+@mailhogUrl = http://localhost:8025
 
 ### ==============================================
 ### HEALTH CHECK

@@ -5,8 +5,8 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.lmc</groupId>
-    <artifactId>lmc-backend</artifactId>
+    <groupId>com.leboncoincoin</groupId>
+    <artifactId>leboncoincoin-backend</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
@@ -20,6 +20,22 @@
                 <groupId>io.quarkus.platform</groupId>
                 <artifactId>quarkus-bom</artifactId>
                 <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- AWS SDK BOM to manage all AWS dependencies versions -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>2.29.16</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Quarkiverse Amazon Services BOM -->
+            <dependency>
+                <groupId>io.quarkiverse.amazonservices</groupId>
+                <artifactId>quarkus-amazon-services-bom</artifactId>
+                <version>2.16.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -55,18 +71,34 @@
             <artifactId>quarkus-flyway</artifactId>
         </dependency>
 
-        <!-- S3 - Quarkiverse Extension -->
+        <!-- S3 - Quarkiverse Extension (version managed by BOM) -->
         <dependency>
             <groupId>io.quarkiverse.amazonservices</groupId>
             <artifactId>quarkus-amazon-s3</artifactId>
-            <version>2.14.0</version>
         </dependency>
         
-        <!-- AWS SDK URL Connection Client (required for S3) -->
+        <!-- AWS SDK URL Connection Client (required for S3) - version managed by AWS SDK BOM -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
-            <version>2.38.9</version>
+        </dependency>
+
+        <!-- SES - Quarkiverse Extension (version managed by BOM) -->
+        <dependency>
+            <groupId>io.quarkiverse.amazonservices</groupId>
+            <artifactId>quarkus-amazon-ses</artifactId>
+        </dependency>
+
+        <!-- Mailer (for SMTP in dev mode with MailHog) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-mailer</artifactId>
+        </dependency>
+
+        <!-- Qute templating for email templates -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-qute</artifactId>
         </dependency>
 
 

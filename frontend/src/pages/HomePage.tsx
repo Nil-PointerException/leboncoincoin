@@ -62,7 +62,7 @@ export default function HomePage() {
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
         <Typography variant="h3" component="h1" gutterBottom fontWeight={700}>
-          Petites Annonces
+          LeBonCoinCoin 🦆
         </Typography>
         <Typography variant="subtitle1" color="text.secondary" paragraph>
           Découvrez des milliers d'annonces près de chez vous

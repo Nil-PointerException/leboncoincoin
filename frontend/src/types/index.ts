@@ -40,5 +40,16 @@ export interface ListingFilter {
   search?: string
 }
 
+export interface Favorite {
+  id: string
+  userId: string
+  listingId: string
+  createdAt: string
+}
+
+export interface FavoriteStatus {
+  isFavorited: boolean
+}
+
 export * from './messaging'
 

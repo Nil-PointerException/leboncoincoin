@@ -25,7 +25,9 @@ import CategoryIcon from '@mui/icons-material/Category'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import DeleteIcon from '@mui/icons-material/Delete'
 import MessageIcon from '@mui/icons-material/Message'
-import { listingsApi, setAuthToken } from '@/services/api'
+import FavoriteIcon from '@mui/icons-material/Favorite'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import { listingsApi, setAuthToken, favoritesApi } from '@/services/api'
 import { messagingApi } from '@/services/messagingApi'
 import type { Listing } from '@/types'
 
@@ -41,6 +43,8 @@ export default function ListingDetailPage() {
   const [contactDialogOpen, setContactDialogOpen] = useState(false)
   const [initialMessage, setInitialMessage] = useState('')
   const [contacting, setContacting] = useState(false)
+  const [isFavorited, setIsFavorited] = useState(false)
+  const [favoriteLoading, setFavoriteLoading] = useState(false)
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -60,6 +64,21 @@ export default function ListingDetailPage() {
 
     fetchListing()
   }, [id])
+
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      if (id && isSignedIn) {
+        try {
+          const status = await favoritesApi.getFavoriteStatus(id)
+          setIsFavorited(status.isFavorited)
+        } catch (err) {
+          console.error('Error checking favorite status:', err)
+        }
+      }
+    }
+
+    checkFavoriteStatus()
+  }, [id, isSignedIn])
 
   const handleDelete = async () => {
     if (!id || !window.confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')) return
@@ -95,6 +114,29 @@ export default function ListingDetailPage() {
       setContacting(false)
       setContactDialogOpen(false)
       setInitialMessage('')
+    }
+  }
+
+  const handleToggleFavorite = async () => {
+    if (!id || !isSignedIn) {
+      navigate('/sign-in')
+      return
+    }
+
+    setFavoriteLoading(true)
+    try {
+      if (isFavorited) {
+        await favoritesApi.removeFavorite(id)
+        setIsFavorited(false)
+      } else {
+        await favoritesApi.addFavorite(id)
+        setIsFavorited(true)
+      }
+    } catch (err) {
+      console.error('Error toggling favorite:', err)
+      alert('Erreur lors de la modification des favoris')
+    } finally {
+      setFavoriteLoading(false)
     }
   }
 
@@ -186,22 +228,35 @@ export default function ListingDetailPage() {
                   Supprimer l'annonce
                 </Button>
               ) : (
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  startIcon={<MessageIcon />}
-                  onClick={() => {
-                    if (!isSignedIn) {
-                      navigate('/sign-in')
-                    } else {
-                      setContactDialogOpen(true)
-                    }
-                  }}
-                >
-                  Contacter le vendeur
-                </Button>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    startIcon={<MessageIcon />}
+                    onClick={() => {
+                      if (!isSignedIn) {
+                        navigate('/sign-in')
+                      } else {
+                        setContactDialogOpen(true)
+                      }
+                    }}
+                  >
+                    Contacter le vendeur
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    color={isFavorited ? "error" : "primary"}
+                    size="large"
+                    startIcon={isFavorited ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                    onClick={handleToggleFavorite}
+                    disabled={favoriteLoading}
+                  >
+                    {isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                  </Button>
+                </Box>
               )}
             </Paper>
           </Grid>

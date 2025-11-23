@@ -110,5 +110,32 @@ export const uploadApi = {
   },
 }
 
+// Favorites API
+export const favoritesApi = {
+  getFavorites: async (): Promise<import('@/types').Favorite[]> => {
+    const { data } = await api.get('/favorites')
+    return data
+  },
+
+  getFavoriteListings: async (): Promise<Listing[]> => {
+    const { data } = await api.get('/favorites/listings')
+    return data
+  },
+
+  addFavorite: async (listingId: string): Promise<import('@/types').Favorite> => {
+    const { data } = await api.post(`/favorites/${listingId}`)
+    return data
+  },
+
+  removeFavorite: async (listingId: string): Promise<void> => {
+    await api.delete(`/favorites/${listingId}`)
+  },
+
+  getFavoriteStatus: async (listingId: string): Promise<import('@/types').FavoriteStatus> => {
+    const { data } = await api.get(`/favorites/${listingId}/status`)
+    return data
+  },
+}
+
 export default api
 
