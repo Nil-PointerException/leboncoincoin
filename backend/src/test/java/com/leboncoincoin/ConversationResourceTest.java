@@ -366,7 +366,16 @@ class ConversationResourceTest {
     void testCleanupListing() {
         Assertions.assertNotNull(sellerListingId, "Listing should exist");
 
+        String deleteRequestBody = """
+            {
+                "reason": "OTHER",
+                "wasSold": null
+            }
+            """;
+
         given()
+            .contentType(ContentType.JSON)
+            .body(deleteRequestBody)
             .when()
                 .delete("/api/listings/" + sellerListingId)
             .then()

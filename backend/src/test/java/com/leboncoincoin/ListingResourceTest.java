@@ -171,13 +171,22 @@ class ListingResourceTest {
     void testDeleteListing() {
         Assertions.assertNotNull(createdListingId, "Listing should exist before deletion");
 
+        String deleteRequestBody = """
+            {
+                "reason": "OTHER",
+                "wasSold": null
+            }
+            """;
+
         given()
+            .contentType(ContentType.JSON)
+            .body(deleteRequestBody)
             .when()
                 .delete("/api/listings/" + createdListingId)
             .then()
                 .statusCode(204);
 
-        // Verify deletion
+        // Verify deletion (soft delete - listing should not appear in active listings)
         given()
             .when()
                 .get("/api/listings/" + createdListingId)
@@ -269,7 +278,19 @@ class ListingResourceTest {
                 .extract().path("id");
 
         // Cleanup
-        given().when().delete("/api/listings/" + listingId);
+        String deleteRequestBody = """
+            {
+                "reason": "OTHER",
+                "wasSold": null
+            }
+            """;
+        given()
+            .contentType(ContentType.JSON)
+            .body(deleteRequestBody)
+            .when()
+                .delete("/api/listings/" + listingId)
+            .then()
+                .statusCode(204);
 
         System.out.println("✅ Listing with images created successfully");
     }

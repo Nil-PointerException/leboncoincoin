@@ -46,8 +46,11 @@ public class ListingService {
 
     public Listing getListingById(String id) {
         Log.debugf("Getting listing by id: %s", id);
-        return listingRepository.findByIdOptional(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
+        Listing listing = listingRepository.findByIdAndNotDeleted(id);
+        if (listing == null) {
+            throw new ResourceNotFoundException("Listing not found with id: " + id);
+        }
+        return listing;
     }
 
     public List<Listing> getAllListings() {
@@ -122,6 +125,12 @@ public class ListingService {
         
         listingRepository.persist(listing);
         
-        Log.infof("Listing %s soft-deleted with feedback for analytics", id);
+        // Delete associated conversations (hard delete) since listing is soft-deleted
+        List<Conversation> conversations = Conversation.findByListingId(id);
+        for (Conversation conversation : conversations) {
+            conversation.delete();
+        }
+        
+        Log.infof("Listing %s soft-deleted with feedback for analytics, deleted %d conversations", id, conversations.size());
     }
 }

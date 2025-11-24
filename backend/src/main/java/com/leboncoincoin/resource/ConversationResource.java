@@ -77,6 +77,12 @@ public class ConversationResource {
             return Response.status(Response.Status.FORBIDDEN).build();
         }
         
+        // Check if listing is soft-deleted (conversation should not be accessible if listing is deleted)
+        Listing listing = Listing.findById(conversation.listingId);
+        if (listing == null || listing.deletedAt != null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        
         List<Message> messages = Message.findByConversationId(conversation.id);
         MessageResponse lastMessage = messages.isEmpty() 
             ? null 
@@ -86,9 +92,7 @@ public class ConversationResource {
             .filter(m -> !m.senderId.equals(userId) && !m.isRead)
             .count();
         
-        // Fetch listing
-        Listing listing = Listing.findById(conversation.listingId);
-        ListingResponse listingResponse = listing != null ? ListingResponse.from(listing) : null;
+        ListingResponse listingResponse = ListingResponse.from(listing);
         
         return Response.ok(ConversationResponse.from(conversation, lastMessage, unreadCount, listingResponse)).build();
     }

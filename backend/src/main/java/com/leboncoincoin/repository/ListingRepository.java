@@ -67,6 +67,10 @@ public class ListingRepository implements PanacheRepositoryBase<Listing, String>
         return count("userId = ?1 AND deletedAt IS NULL", userId);
     }
     
+    public Listing findByIdAndNotDeleted(String id) {
+        return find("id = ?1 AND deletedAt IS NULL", id).firstResult();
+    }
+    
     // Analytics methods
     public long countDeleted() {
         return count("deletedAt IS NOT NULL");
