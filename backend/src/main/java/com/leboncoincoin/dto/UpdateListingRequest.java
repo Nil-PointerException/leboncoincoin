@@ -9,7 +9,7 @@ import jakarta.validation.constraints.DecimalMax;
 import java.math.BigDecimal;
 import java.util.List;
 
-public record CreateListingRequest(
+public record UpdateListingRequest(
     @NotBlank(message = "Title is required")
     @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
     String title,
@@ -35,4 +35,5 @@ public record CreateListingRequest(
     List<String> imageUrls
 ) {
 }
+
 

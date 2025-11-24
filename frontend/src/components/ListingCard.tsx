@@ -1,21 +1,22 @@
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import {
-  Card,
   CardMedia,
   CardContent,
   Typography,
   Box,
-  Chip,
   IconButton,
   Tooltip,
+  Stack,
 } from '@mui/material'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import type { Listing } from '@/types'
 import { favoritesApi } from '@/services/api'
 import { useAuthSafe } from '@/hooks/useAuthSafe'
+import { DuckCard, CategoryChip, PriceChip } from './ui'
 
 interface ListingCardProps {
   listing: Listing
@@ -44,10 +45,9 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
   }
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
-    e.stopPropagation() // Prevent card navigation
+    e.stopPropagation()
 
     if (!isSignedIn) {
-      // Redirect to sign in or show a message
       navigate('/sign-in')
       return
     }
@@ -75,89 +75,245 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
     navigate(`/listings/${listing.id}`)
   }
 
-  const imageUrl = listing.imageUrls?.[0] || 'https://via.placeholder.com/400x300?text=No+Image'
+  const imageUrl = listing.imageUrls?.[0] || 'https://via.placeholder.com/400x300?text=🦆+Pas+d\'image'
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    
+    if (diffInHours < 1) return 'À l\'instant'
+    if (diffInHours < 24) return `Il y a ${diffInHours}h`
+    if (diffInHours < 48) return 'Hier'
+    const diffInDays = Math.floor(diffInHours / 24)
+    if (diffInDays < 7) return `Il y a ${diffInDays}j`
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+  }
 
   return (
-    <Card
+    <DuckCard
+      hover
+      gradient
+      onClick={handleClick}
       sx={{
         cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-        },
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          boxShadow: '0 12px 40px rgba(255, 215, 0, 0.3)',
+        },
       }}
-      onClick={handleClick}
     >
-      <Box sx={{ position: 'relative' }}>
+      {/* Image avec overlay gradient */}
+      <Box 
+        sx={{ 
+          position: 'relative', 
+          overflow: 'hidden',
+          height: 200,
+          backgroundColor: 'grey.100',
+        }}
+      >
         <CardMedia
           component="img"
           height="200"
           image={imageUrl}
           alt={listing.title}
-          sx={{ objectFit: 'cover' }}
+          sx={{
+            objectFit: 'cover',
+            transition: 'transform 0.5s ease',
+            width: '100%',
+            height: '100%',
+          }}
         />
+        
+        {/* Gradient overlay - Plus subtil */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.15) 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        {/* Favorite button */}
         {isSignedIn && (
-          <Tooltip title={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}>
+          <Tooltip title={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'} arrow>
             <IconButton
               onClick={handleFavoriteClick}
               disabled={isLoading}
+              size="small"
               sx={{
                 position: 'absolute',
                 top: 8,
                 right: 8,
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.12)',
+                transition: 'all 0.2s ease',
+                width: 36,
+                height: 36,
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 1)',
+                  backgroundColor: 'white',
+                  transform: 'scale(1.15)',
+                  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
                 },
               }}
             >
               {isFavorited ? (
-                <FavoriteIcon color="error" />
+                <FavoriteIcon sx={{ color: '#F44336', fontSize: 20 }} />
               ) : (
-                <FavoriteBorderIcon />
+                <FavoriteBorderIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
               )}
             </IconButton>
           </Tooltip>
         )}
+
+        {/* Category chip - Plus élégant */}
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 8,
+            left: 8,
+          }}
+        >
+          <CategoryChip
+            label={listing.category}
+            size="small"
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.98)',
+              backdropFilter: 'blur(10px)',
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.12)',
+              border: '1px solid rgba(255, 215, 0, 0.3)',
+            }}
+          />
+        </Box>
       </Box>
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600, flexGrow: 1 }}>
-            {listing.title}
-          </Typography>
-          <Typography variant="h6" color="primary" sx={{ fontWeight: 700, ml: 1 }}>
+
+      {/* Content */}
+      <CardContent sx={{ flexGrow: 1, p: 2, display: 'flex', flexDirection: 'column' }}>
+        {/* Price - En évidence */}
+        <Box sx={{ mb: 1.5 }}>
+          <Typography
+            variant="h5"
+            component="div"
+            sx={{
+              fontWeight: 900,
+              fontSize: '1.5rem',
+              color: 'primary.main',
+              letterSpacing: '-0.02em',
+            }}
+          >
             {listing.price.toFixed(2)} €
           </Typography>
         </Box>
 
+        {/* Title */}
         <Typography
-          variant="body2"
-          color="text.secondary"
+          variant="h6"
+          component="div"
           sx={{
-            mb: 2,
+            fontWeight: 700,
+            fontSize: '1rem',
+            lineHeight: 1.4,
+            mb: 1,
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
+            minHeight: '2.8em',
+            color: 'text.primary',
+          }}
+        >
+          {listing.title}
+        </Typography>
+
+        {/* Description */}
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mb: 'auto',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            lineHeight: 1.5,
+            fontSize: '0.875rem',
           }}
         >
           {listing.description}
         </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Chip label={listing.category} size="small" color="primary" variant="outlined" />
-          <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-            <LocationOnIcon fontSize="small" sx={{ mr: 0.5 }} />
-            <Typography variant="caption">{listing.location}</Typography>
-          </Box>
+        {/* Footer info - Plus compact */}
+        <Box 
+          sx={{ 
+            mt: 2, 
+            pt: 1.5, 
+            borderTop: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Stack spacing={0.5}>
+            {/* Location */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <LocationOnIcon
+                sx={{
+                  fontSize: 16,
+                  color: 'primary.main',
+                }}
+              />
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ 
+                  fontWeight: 600, 
+                  fontSize: '0.75rem',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {listing.location}
+              </Typography>
+            </Box>
+
+            {/* Date */}
+            {listing.createdAt && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <AccessTimeIcon
+                  sx={{
+                    fontSize: 16,
+                    color: 'text.disabled',
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 500, fontSize: '0.75rem' }}
+                >
+                  {listing.updatedAt && listing.updatedAt !== listing.createdAt 
+                    ? `Modifié ${formatDate(listing.updatedAt)}`
+                    : formatDate(listing.createdAt)
+                  }
+                </Typography>
+              </Box>
+            )}
+          </Stack>
         </Box>
       </CardContent>
-    </Card>
+    </DuckCard>
   )
 }
-

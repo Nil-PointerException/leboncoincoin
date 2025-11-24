@@ -15,7 +15,8 @@ public record ListingResponse(
     String location,
     List<String> imageUrls,
     String userId,
-    Instant createdAt
+    Instant createdAt,
+    Instant updatedAt
 ) {
     public static ListingResponse from(Listing listing) {
         return new ListingResponse(
@@ -27,7 +28,8 @@ public record ListingResponse(
             listing.location,
             listing.imageUrls,
             listing.userId,
-            listing.createdAt
+            listing.createdAt,
+            listing.updatedAt
         );
     }
 }

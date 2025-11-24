@@ -1,5 +1,7 @@
 package com.leboncoincoin.security;
 
+import com.leboncoincoin.entity.User;
+import com.leboncoincoin.entity.UserRole;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -55,6 +57,36 @@ public class SecurityConfig {
      */
     public boolean isAuthenticated() {
         return !securityIdentity.isAnonymous();
+    }
+
+    /**
+     * Check if current user has admin role
+     */
+    public boolean isAdmin() {
+        if (!isAuthenticated()) {
+            return false;
+        }
+        
+        String userId = getCurrentUserId();
+        User user = User.findById(userId);
+        
+        if (user == null) {
+            return false;
+        }
+        
+        return user.isAdmin();
+    }
+
+    /**
+     * Get current user from database
+     */
+    public User getCurrentUser() {
+        if (!isAuthenticated()) {
+            return null;
+        }
+        
+        String userId = getCurrentUserId();
+        return User.findById(userId);
     }
 }
 

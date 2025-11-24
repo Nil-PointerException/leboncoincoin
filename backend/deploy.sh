@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deployment script for LMC Backend to AWS Lambda
+# Deployment script for LeBonCoinCoin Backend to AWS Lambda
 # Usage: ./deploy.sh [environment]
 # Example: ./deploy.sh prod
 
@@ -8,11 +8,12 @@ set -e
 
 ENVIRONMENT=${1:-dev}
 
-echo "🚀 Deploying LMC Backend to AWS Lambda (Environment: $ENVIRONMENT)"
+echo "🚀 Deploying LeBonCoinCoin Backend to AWS Lambda (Environment: $ENVIRONMENT)"
+echo "☕ Java 21 Runtime"
 
-# Build the application
+# Build the application with Lambda profile
 echo "📦 Building application..."
-mvn clean package -DskipTests
+mvn clean package -Plambda -DskipTests
 
 # Check if function.zip exists
 if [ ! -f "target/function.zip" ]; then
@@ -23,7 +24,7 @@ fi
 echo "✅ Build successful"
 
 # Deploy using AWS CLI (example - adjust for your setup)
-FUNCTION_NAME="lmc-backend-${ENVIRONMENT}"
+FUNCTION_NAME="leboncoincoin-backend-${ENVIRONMENT}"
 REGION=${AWS_REGION:-eu-west-3}
 
 echo "🔄 Updating Lambda function: $FUNCTION_NAME"

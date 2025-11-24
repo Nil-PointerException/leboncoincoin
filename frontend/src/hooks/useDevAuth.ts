@@ -13,7 +13,7 @@ const devUserData: Partial<UserResource> = {
   id: 'dev-user-123',
   fullName: 'Dev User',
   primaryEmailAddress: {
-    emailAddress: 'dev@lmc.local',
+    emailAddress: 'dev@leboncoincoin.local',
   } as any,
   imageUrl: 'https://www.gravatar.com/avatar/dev?s=200&d=mp',
 } as Partial<UserResource>

@@ -2,6 +2,8 @@ package com.leboncoincoin.resource;
 
 import com.leboncoincoin.entity.Listing;
 import com.leboncoincoin.dto.CreateListingRequest;
+import com.leboncoincoin.dto.UpdateListingRequest;
+import com.leboncoincoin.dto.DeleteListingRequest;
 import com.leboncoincoin.dto.ListingFilter;
 import com.leboncoincoin.dto.ListingResponse;
 import com.leboncoincoin.security.SecurityConfig;
@@ -82,14 +84,26 @@ public class ListingResource {
                 .build();
     }
 
+    @PUT
+    @Path("/{id}")
+    @Authenticated
+    public Response updateListing(@PathParam("id") String id, @Valid UpdateListingRequest request) {
+        Log.infof("PUT /listings/%s", id);
+        
+        String userId = securityConfig.getCurrentUserId();
+        Listing listing = listingService.updateListing(id, request, userId);
+        
+        return Response.ok(ListingResponse.from(listing)).build();
+    }
+
     @DELETE
     @Path("/{id}")
     @Authenticated
-    public Response deleteListing(@PathParam("id") String id) {
-        Log.infof("DELETE /listings/%s", id);
+    public Response deleteListing(@PathParam("id") String id, @Valid DeleteListingRequest feedback) {
+        Log.infof("DELETE /listings/%s with feedback: %s", id, feedback);
         
         String userId = securityConfig.getCurrentUserId();
-        listingService.deleteListing(id, userId);
+        listingService.deleteListing(id, userId, feedback);
         
         return Response.noContent().build();
     }

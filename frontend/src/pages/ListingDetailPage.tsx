@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useUserSafe } from '@/hooks/useUserSafe'
 import { useAuthSafe } from '@/hooks/useAuthSafe'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 import {
   Container,
   Box,
@@ -12,8 +13,6 @@ import {
   Grid,
   CircularProgress,
   Alert,
-  ImageList,
-  ImageListItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -24,17 +23,20 @@ import LocationOnIcon from '@mui/icons-material/LocationOn'
 import CategoryIcon from '@mui/icons-material/Category'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
 import MessageIcon from '@mui/icons-material/Message'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
 import { listingsApi, setAuthToken, favoritesApi } from '@/services/api'
 import { messagingApi } from '@/services/messagingApi'
 import type { Listing } from '@/types'
+import ImageSlider from '@/components/ImageSlider'
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user, isSignedIn } = useUserSafe()
+  const { user: clerkUser, isSignedIn } = useUserSafe()
+  const { user: backendUser, isAdmin } = useCurrentUser()
   const { getToken } = useAuthSafe()
 
   const [listing, setListing] = useState<Listing | null>(null)
@@ -45,6 +47,14 @@ export default function ListingDetailPage() {
   const [contacting, setContacting] = useState(false)
   const [isFavorited, setIsFavorited] = useState(false)
   const [favoriteLoading, setFavoriteLoading] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteFeedback, setDeleteFeedback] = useState<{
+    reason: 'SOLD' | 'NO_LONGER_AVAILABLE' | 'OTHER'
+    wasSold: boolean | null
+  }>({
+    reason: 'SOLD',
+    wasSold: null,
+  })
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -80,11 +90,15 @@ export default function ListingDetailPage() {
     checkFavoriteStatus()
   }, [id, isSignedIn])
 
-  const handleDelete = async () => {
-    if (!id || !window.confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')) return
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!id) return
 
     try {
-      await listingsApi.delete(id)
+      await listingsApi.delete(id, deleteFeedback)
       navigate('/profile')
     } catch (err) {
       console.error('Error deleting listing:', err)
@@ -163,7 +177,8 @@ export default function ListingDetailPage() {
     )
   }
 
-  const isOwner = user?.id === listing.userId
+  const isOwner = clerkUser?.id === listing.userId
+  const canDelete = isOwner || isAdmin
   const images = listing.imageUrls?.length > 0 
     ? listing.imageUrls 
     : ['https://via.placeholder.com/800x600?text=No+Image']
@@ -177,18 +192,7 @@ export default function ListingDetailPage() {
 
         <Grid container spacing={4}>
           <Grid item xs={12} md={7}>
-            <ImageList cols={1} gap={8}>
-              {images.map((url, index) => (
-                <ImageListItem key={index}>
-                  <img
-                    src={url}
-                    alt={`${listing.title} - ${index + 1}`}
-                    loading="lazy"
-                    style={{ borderRadius: 8, maxHeight: 500, objectFit: 'cover' }}
-                  />
-                </ImageListItem>
-              ))}
-            </ImageList>
+            <ImageSlider images={images} alt={listing.title} />
           </Grid>
 
           <Grid item xs={12} md={5}>
@@ -215,18 +219,55 @@ export default function ListingDetailPage() {
 
               <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
                 Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')}
+                {listing.updatedAt && listing.updatedAt !== listing.createdAt && (
+                  <> • Modifié le {new Date(listing.updatedAt).toLocaleDateString('fr-FR')}</>
+                )}
               </Typography>
 
               {isOwner ? (
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={handleDelete}
-                >
-                  Supprimer l'annonce
-                </Button>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    startIcon={<EditIcon />}
+                    onClick={() => navigate(`/listings/${id}/edit`)}
+                  >
+                    Modifier l'annonce
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleDeleteClick}
+                  >
+                    Supprimer l'annonce
+                  </Button>
+                </Box>
+              ) : isAdmin ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleDeleteClick}
+                    sx={{
+                      borderWidth: 2,
+                      '&:hover': {
+                        borderWidth: 2,
+                        bgcolor: 'error.main',
+                        color: 'white',
+                      },
+                    }}
+                  >
+                    🛡️ Supprimer (Admin)
+                  </Button>
+                  <Alert severity="warning" sx={{ mt: 1 }}>
+                    Vous allez supprimer une annonce en tant qu'administrateur.
+                  </Alert>
+                </Box>
               ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Button
@@ -268,7 +309,7 @@ export default function ListingDetailPage() {
         <DialogTitle>Contacter le vendeur</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Envoyez un message au vendeur pour cette annonce : <strong>{listing.title}</strong>
+            Envoyez un message au vendeur pour cette annonce : <strong>{listing?.title}</strong>
           </Typography>
           <TextField
             fullWidth
@@ -293,6 +334,70 @@ export default function ListingDetailPage() {
             startIcon={contacting ? <CircularProgress size={20} /> : <MessageIcon />}
           >
             Envoyer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog with Feedback */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Supprimer l'annonce</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Avant de supprimer votre annonce, aidez-nous à améliorer notre service :
+          </Typography>
+
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle2" gutterBottom fontWeight={600}>
+              Pourquoi supprimez-vous cette annonce ?
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
+              <Button
+                variant={deleteFeedback.reason === 'SOLD' ? 'contained' : 'outlined'}
+                onClick={() => setDeleteFeedback({ ...deleteFeedback, reason: 'SOLD', wasSold: true })}
+                sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+              >
+                ✅ J'ai vendu l'article
+              </Button>
+              <Button
+                variant={deleteFeedback.reason === 'NO_LONGER_AVAILABLE' ? 'contained' : 'outlined'}
+                onClick={() => setDeleteFeedback({ ...deleteFeedback, reason: 'NO_LONGER_AVAILABLE', wasSold: false })}
+                sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+              >
+                ❌ L'article n'est plus disponible
+              </Button>
+              <Button
+                variant={deleteFeedback.reason === 'OTHER' ? 'contained' : 'outlined'}
+                onClick={() => setDeleteFeedback({ ...deleteFeedback, reason: 'OTHER', wasSold: null })}
+                sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+              >
+                🔄 Autre raison
+              </Button>
+            </Box>
+          </Box>
+
+          {deleteFeedback.reason === 'SOLD' && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              🎉 Félicitations pour votre vente ! Ces données nous aident à améliorer le service.
+            </Alert>
+          )}
+
+          {deleteFeedback.reason === 'NO_LONGER_AVAILABLE' && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Merci pour votre retour. Nous espérons que vous trouverez une solution prochainement.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            startIcon={<DeleteIcon />}
+          >
+            Confirmer la suppression
           </Button>
         </DialogActions>
       </Dialog>

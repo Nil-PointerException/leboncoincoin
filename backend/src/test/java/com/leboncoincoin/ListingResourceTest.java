@@ -250,8 +250,8 @@ class ListingResourceTest {
                 "category": "Électronique",
                 "location": "Lyon",
                 "imageUrls": [
-                    "http://localhost:9000/lmc-images/test-image-1.jpg",
-                    "http://localhost:9000/lmc-images/test-image-2.jpg"
+                    "http://localhost:9000/leboncoincoin-images/test-image-1.jpg",
+                    "http://localhost:9000/leboncoincoin-images/test-image-2.jpg"
                 ]
             }
             """;

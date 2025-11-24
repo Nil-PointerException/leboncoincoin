@@ -44,6 +44,18 @@ public class Listing extends PanacheEntityBase {
     @Column(name = "created_at", nullable = false)
     public Instant createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    public Instant updatedAt;
+
+    @Column(name = "deleted_at")
+    public Instant deletedAt;
+
+    @Column(name = "deletion_reason", length = 50)
+    public String deletionReason;
+
+    @Column(name = "was_sold")
+    public Boolean wasSold;
+
     public Listing() {
     }
 
@@ -57,7 +69,9 @@ public class Listing extends PanacheEntityBase {
         this.location = location;
         this.imageUrls = imageUrls != null ? new ArrayList<>(imageUrls) : new ArrayList<>();
         this.userId = userId;
-        this.createdAt = Instant.now();
+        Instant now = Instant.now();
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
     @PrePersist
@@ -65,9 +79,18 @@ public class Listing extends PanacheEntityBase {
         if (id == null) {
             id = UUID.randomUUID().toString();
         }
+        Instant now = Instant.now();
         if (createdAt == null) {
-            createdAt = Instant.now();
+            createdAt = now;
         }
+        if (updatedAt == null) {
+            updatedAt = now;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = Instant.now();
     }
 
     @Override
@@ -93,6 +116,7 @@ public class Listing extends PanacheEntityBase {
                 ", location='" + location + '\'' +
                 ", userId='" + userId + '\'' +
                 ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }

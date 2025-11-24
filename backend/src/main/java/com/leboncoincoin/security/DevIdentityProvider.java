@@ -25,7 +25,7 @@ public class DevIdentityProvider implements IdentityProvider<DevAuthenticationRe
     @ConfigProperty(name = "app.dev.test-user-id", defaultValue = "dev-user-123")
     String testUserId;
 
-    @ConfigProperty(name = "app.dev.test-user-email", defaultValue = "dev@lmc.local")
+    @ConfigProperty(name = "app.dev.test-user-email", defaultValue = "dev@leboncoincoin.local")
     String testUserEmail;
 
     @ConfigProperty(name = "app.dev.test-user-name", defaultValue = "Dev User")

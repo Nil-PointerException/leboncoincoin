@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ListingDetailPage from './pages/ListingDetailPage'
 import CreateListingPage from './pages/CreateListingPage'
+import EditListingPage from './pages/EditListingPage'
 import ProfilePage from './pages/ProfilePage'
 import ConversationsPage from './pages/ConversationsPage'
 import ChatPage from './pages/ChatPage'
@@ -47,6 +48,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CreateListingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/listings/:id/edit"
+          element={
+            <ProtectedRoute>
+              <EditListingPage />
             </ProtectedRoute>
           }
         />

@@ -19,6 +19,10 @@ public class User extends PanacheEntityBase {
     @Column(name = "name", nullable = false, length = 255)
     public String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    public UserRole role = UserRole.USER;
+
     @Column(name = "created_at", nullable = false)
     public Instant createdAt;
 
@@ -29,7 +33,12 @@ public class User extends PanacheEntityBase {
         this.id = id;
         this.email = email;
         this.name = name;
+        this.role = UserRole.USER;
         this.createdAt = Instant.now();
+    }
+
+    public boolean isAdmin() {
+        return role == UserRole.ADMIN;
     }
 
     @PrePersist
@@ -58,6 +67,7 @@ public class User extends PanacheEntityBase {
                 "id='" + id + '\'' +
                 ", email='" + email + '\'' +
                 ", name='" + name + '\'' +
+                ", role=" + role +
                 ", createdAt=" + createdAt +
                 '}';
     }

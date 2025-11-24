@@ -15,11 +15,11 @@ import java.util.Map;
 public class ListingRepository implements PanacheRepositoryBase<Listing, String> {
 
     public List<Listing> findByUserId(String userId) {
-        return list("userId", Sort.descending("createdAt"), userId);
+        return list("userId = ?1 AND deletedAt IS NULL", Sort.descending("createdAt"), userId);
     }
 
     public List<Listing> findAllSorted() {
-        return listAll(Sort.descending("createdAt"));
+        return list("deletedAt IS NULL", Sort.descending("createdAt"));
     }
 
     public List<Listing> findWithFilter(ListingFilter filter) {
@@ -27,7 +27,7 @@ public class ListingRepository implements PanacheRepositoryBase<Listing, String>
             return findAllSorted();
         }
 
-        StringBuilder query = new StringBuilder("1=1");
+        StringBuilder query = new StringBuilder("deletedAt IS NULL");
         Map<String, Object> params = new HashMap<>();
 
         // Category filter
@@ -64,6 +64,19 @@ public class ListingRepository implements PanacheRepositoryBase<Listing, String>
     }
 
     public long countByUserId(String userId) {
-        return count("userId", userId);
+        return count("userId = ?1 AND deletedAt IS NULL", userId);
+    }
+    
+    // Analytics methods
+    public long countDeleted() {
+        return count("deletedAt IS NOT NULL");
+    }
+    
+    public long countSold() {
+        return count("wasSold = true");
+    }
+    
+    public List<Listing> findDeletedListings() {
+        return list("deletedAt IS NOT NULL", Sort.descending("deletedAt"));
     }
 }

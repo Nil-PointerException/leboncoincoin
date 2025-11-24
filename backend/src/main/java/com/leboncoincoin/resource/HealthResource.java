@@ -20,7 +20,7 @@ public class HealthResource {
         return Response.ok(Map.of(
                 "status", "UP",
                 "timestamp", Instant.now().toString(),
-                "service", "lmc-backend"
+                "service", "leboncoincoin-backend"
         )).build();
     }
 }

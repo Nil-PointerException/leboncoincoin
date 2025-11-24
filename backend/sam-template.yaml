@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: LMC Backend - Classified Ads Platform (PostgreSQL + RDS)
+Description: LeBonCoinCoin Backend - Classified Ads Platform (PostgreSQL + RDS)
 
 Globals:
   Function:
@@ -36,7 +36,7 @@ Parameters:
     Description: Clerk Domain
   S3BucketName:
     Type: String
-    Default: lmc-images
+    Default: leboncoincoin-images
     Description: S3 Bucket for images
   VpcSubnetIds:
     Type: CommaDelimitedList
@@ -46,10 +46,10 @@ Parameters:
     Description: Security Group IDs for Lambda
 
 Resources:
-  LmcFunction:
+  LeBonCoinCoinFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: lmc-backend
+      FunctionName: leboncoincoin-backend
       CodeUri: target/function.zip
       Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
       VpcConfig:
@@ -82,4 +82,4 @@ Outputs:
   
   FunctionArn:
     Description: "Lambda Function ARN"
-    Value: !GetAtt LmcFunction.Arn
+    Value: !GetAtt LeBonCoinCoinFunction.Arn

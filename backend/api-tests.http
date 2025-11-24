@@ -232,7 +232,7 @@ Authorization: Bearer {{authToken}}
 }
 
 ### Mark a message as read
-PUT {{baseUrl}}/messages/REPLACE_WITH_MESSAGE_ID/read
+PUT {{baseUrl}}/conversations/REPLACE_WITH_CONVERSATION_ID/messages/REPLACE_WITH_MESSAGE_ID/read
 Authorization: Bearer {{authToken}}
 
 ### ==============================================
@@ -258,7 +258,7 @@ Authorization: Bearer {{authToken}}
 # GET {{baseUrl}}/conversations/{conversationId}/messages
 
 ### Step 6: Mark messages as read
-# PUT {{baseUrl}}/messages/{messageId}/read
+# PUT {{baseUrl}}/conversations/{conversationId}/messages/{messageId}/read
 
 ### Step 7: Seller replies
 # POST {{baseUrl}}/conversations/{conversationId}/messages
@@ -347,7 +347,7 @@ Content-Type: application/json
 # 2. System creates a unique conversation linked to the listing
 # 3. Both buyer and seller can send messages (POST /api/conversations/{id}/messages)
 # 4. Both can view all messages in the conversation (GET /api/conversations/{id}/messages)
-# 5. Messages can be marked as read (PUT /api/messages/{id}/read)
+# 5. Messages can be marked as read (PUT /api/conversations/{id}/messages/{msgId}/read)
 # 6. Unread message count is tracked per conversation
 #
 # Data model:

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuthSafe } from '@/hooks/useAuthSafe'
 import {
   Container,
@@ -23,14 +23,16 @@ import LocationOnIcon from '@mui/icons-material/LocationOn'
 import { listingsApi, uploadApi, setAuthToken } from '@/services/api'
 import { CATEGORIES } from '@/constants/categories'
 import { searchLocations, type LocationSuggestion } from '@/services/locationApi'
-import type { CreateListingRequest } from '@/types'
+import type { Listing, CreateListingRequest } from '@/types'
 import CategorySelect from '@/components/CategorySelect'
 
-export default function CreateListingPage() {
+export default function EditListingPage() {
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { getToken } = useAuthSafe()
   
   const [loading, setLoading] = useState(false)
+  const [fetchLoading, setFetchLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
@@ -45,6 +47,35 @@ export default function CreateListingPage() {
     location: '',
     imageUrls: [],
   })
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      if (!id) return
+
+      try {
+        setFetchLoading(true)
+        const listing: Listing = await listingsApi.getById(id)
+        
+        setFormData({
+          title: listing.title,
+          description: listing.description,
+          price: listing.price,
+          category: listing.category,
+          location: listing.location,
+          imageUrls: listing.imageUrls || [],
+        })
+        
+        setUploadedImages(listing.imageUrls || [])
+      } catch (err) {
+        console.error('Error fetching listing:', err)
+        setError("Erreur lors du chargement de l'annonce")
+      } finally {
+        setFetchLoading(false)
+      }
+    }
+
+    fetchListing()
+  }, [id])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -113,6 +144,8 @@ export default function CreateListingPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!id) return
+
     setLoading(true)
     setError(null)
 
@@ -126,21 +159,44 @@ export default function CreateListingPage() {
         imageUrls: uploadedImages,
       }
 
-      const listing = await listingsApi.create(request)
+      const listing = await listingsApi.update(id, request)
       navigate(`/listings/${listing.id}`)
     } catch (err) {
-      console.error('Error creating listing:', err)
-      setError("Erreur lors de la création de l'annonce")
+      console.error('Error updating listing:', err)
+      setError("Erreur lors de la modification de l'annonce")
     } finally {
       setLoading(false)
     }
+  }
+
+  if (fetchLoading) {
+    return (
+      <Container>
+        <Box display="flex" justifyContent="center" my={8}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    )
+  }
+
+  if (error && !formData.title) {
+    return (
+      <Container>
+        <Alert severity="error" sx={{ my: 4 }}>
+          {error}
+        </Alert>
+        <Button onClick={() => navigate('/')}>
+          Retour aux annonces
+        </Button>
+      </Container>
+    )
   }
 
   return (
     <Container maxWidth="md">
       <Paper sx={{ p: 4, my: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom fontWeight={700}>
-          Créer une annonce
+          Modifier l'annonce
         </Typography>
 
         {error && (
@@ -302,13 +358,13 @@ export default function CreateListingPage() {
               size="large"
               disabled={loading || uploading}
             >
-              {loading ? <CircularProgress size={24} /> : 'Créer l\'annonce'}
+              {loading ? <CircularProgress size={24} /> : 'Enregistrer les modifications'}
             </Button>
             <Button
               fullWidth
               variant="outlined"
               size="large"
-              onClick={() => navigate('/')}
+              onClick={() => navigate(`/listings/${id}`)}
               disabled={loading}
             >
               Annuler
@@ -319,4 +375,5 @@ export default function CreateListingPage() {
     </Container>
   )
 }
+
 

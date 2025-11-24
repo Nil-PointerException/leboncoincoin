@@ -11,7 +11,7 @@
 
     <properties>
         <quarkus.platform.version>3.15.1</quarkus.platform.version>
-        <maven.compiler.release>23</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
     <dependencyManagement>
@@ -202,4 +202,53 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Profile for building Lambda deployment package -->
+        <profile>
+            <id>lambda</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.quarkus.platform</groupId>
+                        <artifactId>quarkus-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <properties>
+                                        <quarkus.package.type>uber-jar</quarkus.package.type>
+                                    </properties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>3.7.1</version>
+                        <executions>
+                            <execution>
+                                <id>zip-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <configuration>
+                                    <finalName>function</finalName>
+                                    <descriptors>
+                                        <descriptor>src/assembly/zip.xml</descriptor>
+                                    </descriptors>
+                                    <attach>false</attach>
+                                    <appendAssemblyId>false</appendAssemblyId>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

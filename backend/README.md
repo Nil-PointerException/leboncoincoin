@@ -1,14 +1,15 @@
-# LMC Backend - Classified Ads Platform
+# LeBonCoinCoin Backend - Classified Ads Platform
 
-A modern, serverless backend for a classified-ads platform built with **Quarkus**, **PostgreSQL**, and designed to run on **AWS Lambda** with **AWS RDS**.
+A modern, serverless backend for a classified-ads platform built with **Quarkus**, **PostgreSQL**, and designed to run on **AWS Lambda** with **AWS RDS**. 🦆
 
 ## 🏗️ Architecture
 
-- **Framework**: Quarkus 3.16+ with Java 23
+- **Framework**: Quarkus 3.16+ with Java 21 (Amazon Corretto 21)
 - **Runtime**: AWS Lambda (via `quarkus-amazon-lambda-http`)
 - **Database**: PostgreSQL with Panache ORM (Hibernate)
 - **Storage**: AWS S3 for image uploads
 - **Authentication**: Clerk JWT (OIDC)
+- **Email**: Amazon SES (Prod) / MailHog (Dev)
 - **API Style**: RESTful with reactive endpoints
 - **Migrations**: Flyway
 
@@ -18,8 +19,8 @@ A modern, serverless backend for a classified-ads platform built with **Quarkus*
 backend/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/lmc/
-│   │   │   ├── domain/           # JPA Entity models (User, Listing, Message)
+│   │   ├── java/com/leboncoincoin/
+│   │   │   ├── entity/           # JPA Entity models (User, Listing, Message)
 │   │   │   ├── repository/       # Panache repositories
 │   │   │   ├── service/          # Business logic layer
 │   │   │   ├── resource/         # REST API endpoints
@@ -37,7 +38,7 @@ backend/
 
 ## 🔧 Prerequisites
 
-- Java 23
+- Java 21 (Amazon Corretto 21 recommended)
 - Maven 3.9+
 - Docker & Docker Compose (for local PostgreSQL)
 - AWS CLI configured with credentials
@@ -49,17 +50,17 @@ backend/
 
 ### Development Profiles
 
-LMC Backend supporte deux profils :
+LeBonCoinCoin Backend supporte deux profils :
 
-| Profile | Usage | Auth | S3 | Database |
-|---------|-------|------|-----|----------|
-| **dev** | Développement local | ❌ Test user | MinIO local | PostgreSQL local |
-| **prod** | Production | ✅ Clerk OIDC | AWS S3 | AWS RDS |
+| Profile | Usage | Auth | S3 | Database | Email |
+|---------|-------|------|-----|----------|-------|
+| **dev** | Développement local | ❌ Test user | MinIO local | PostgreSQL local | MailHog (SMTP) |
+| **prod** | Production | ✅ Clerk OIDC | AWS S3 | AWS RDS | Amazon SES |
 
 ### Quick Start (Dev Profile) 🎯
 
 ```bash
-# 1. Démarrer PostgreSQL + MinIO
+# 1. Démarrer PostgreSQL + MinIO + MailHog
 docker-compose up -d
 
 # 2. Lancer en mode dev (pas de config AWS/Clerk nécessaire)
@@ -87,13 +88,13 @@ docker ps
 
 **PostgreSQL credentials (local dev):**
 - Host: `localhost:5432`
-- Database: `lmc_db`
-- Username: `lmc_user`
-- Password: `lmc_password`
+- Database: `leboncoincoin_db`
+- Username: `leboncoincoin_user`
+- Password: `leboncoincoin_password`
 
 **pgAdmin (optional):**
 - URL: http://localhost:5050
-- Email: `admin@lmc.com`
+- Email: `admin@leboncoincoin.com`
 - Password: `admin`
 
 ### 2. Configure Environment Variables
@@ -102,14 +103,19 @@ Create a `.env` file or set environment variables:
 
 ```bash
 # Database
-export DB_URL=jdbc:postgresql://localhost:5432/lmc_db
-export DB_USERNAME=lmc_user
-export DB_PASSWORD=lmc_password
+export DB_URL=jdbc:postgresql://localhost:5432/leboncoincoin_db
+export DB_USERNAME=leboncoincoin_user
+export DB_PASSWORD=leboncoincoin_password
 export DB_LOG_SQL=true
 
 # AWS Configuration
 export AWS_REGION=eu-west-3
-export S3_BUCKET_NAME=lmc-images
+export S3_BUCKET_NAME=leboncoincoin-images
+
+# Email Configuration
+export EMAIL_PROVIDER=ses
+export EMAIL_FROM=noreply@leboncoincoin.com
+export EMAIL_FROM_NAME=LeBonCoinCoin
 
 # Clerk Configuration
 export CLERK_CLIENT_ID=your-clerk-client-id
@@ -123,8 +129,8 @@ export CORS_ORIGINS=http://localhost:5173
 ### 3. Create S3 Bucket
 
 ```bash
-aws s3 mb s3://lmc-images --region eu-west-3
-aws s3api put-bucket-cors --bucket lmc-images --cors-configuration file://cors.json
+aws s3 mb s3://leboncoincoin-images --region eu-west-3
+aws s3api put-bucket-cors --bucket leboncoincoin-images --cors-configuration file://cors.json
 ```
 
 ### 4. Run in Development Mode
@@ -163,12 +169,24 @@ The API will be available at: `http://localhost:8080/api`
 - `listing_id` (VARCHAR FK → listings)
 - `image_url` (VARCHAR)
 
-**messages** (for future implementation)
-- `id` (VARCHAR PRIMARY KEY)
-- `listing_id` (VARCHAR FK → listings)
-- `from_user_id` (VARCHAR FK → users)
-- `to_user_id` (VARCHAR FK → users)
+**conversations**
+- `id` (UUID PRIMARY KEY)
+- `listing_id` (UUID FK → listings)
+- `buyer_id` (VARCHAR FK → users)
+- `seller_id` (VARCHAR FK → users)
+
+**messages**
+- `id` (UUID PRIMARY KEY)
+- `conversation_id` (UUID FK → conversations)
+- `sender_id` (VARCHAR FK → users)
 - `content` (TEXT)
+- `sent_at` (TIMESTAMP)
+- `is_read` (BOOLEAN)
+
+**favorites**
+- `id` (UUID PRIMARY KEY)
+- `user_id` (VARCHAR FK → users)
+- `listing_id` (UUID FK → listings)
 - `created_at` (TIMESTAMP)
 
 ### Indexes
@@ -176,7 +194,8 @@ The API will be available at: `http://localhost:8080/api`
 Performance indexes are created on:
 - `users.email`
 - `listings.user_id`, `listings.category`, `listings.location`, `listings.created_at`, `listings.price`
-- `messages.listing_id`, `messages.from_user_id`, `messages.to_user_id`
+- `messages.conversation_id`
+- `favorites.user_id`, `favorites.listing_id`
 
 ## 📡 API Endpoints
 
@@ -194,6 +213,9 @@ Performance indexes are created on:
 - `GET /api/me` - Get current user info
 - `GET /api/me/listings` - Get current user's listings
 - `POST /api/uploads/presigned-url` - Get S3 presigned URL for image upload
+- `GET /api/conversations` - Get user conversations
+- `POST /api/conversations` - Create conversation
+- `GET /api/favorites` - Get user favorites
 
 ## 🗃️ Database Migrations
 
@@ -218,7 +240,7 @@ touch src/main/resources/db/migration/V1.0.2__add_listing_status.sql
 
 ```bash
 # Connect to database
-psql -h localhost -U lmc_user -d lmc_db
+psql -h localhost -U leboncoincoin_user -d leboncoincoin_db
 
 # Check flyway_schema_history table
 SELECT * FROM flyway_schema_history;
@@ -231,7 +253,7 @@ SELECT * FROM flyway_schema_history;
 ```bash
 # Create RDS PostgreSQL instance
 aws rds create-db-instance \
-    --db-instance-identifier lmc-db-prod \
+    --db-instance-identifier leboncoincoin-db-prod \
     --db-instance-class db.t4g.micro \
     --engine postgres \
     --engine-version 16.1 \
@@ -245,7 +267,7 @@ aws rds create-db-instance \
 
 # Get RDS endpoint
 aws rds describe-db-instances \
-    --db-instance-identifier lmc-db-prod \
+    --db-instance-identifier leboncoincoin-db-prod \
     --query 'DBInstances[0].Endpoint.Address' \
     --output text
 ```
@@ -253,7 +275,7 @@ aws rds describe-db-instances \
 ### 2. Update Lambda Environment Variables
 
 ```bash
-export DB_URL=jdbc:postgresql://your-rds-endpoint.rds.amazonaws.com:5432/lmc_db
+export DB_URL=jdbc:postgresql://your-rds-endpoint.rds.amazonaws.com:5432/leboncoincoin_db
 export DB_USERNAME=admin
 export DB_PASSWORD=your_secure_password
 ```
@@ -267,7 +289,7 @@ mvn clean package
 # Deploy with SAM
 sam deploy \
     --template-file sam-template.yaml \
-    --stack-name lmc-backend-prod \
+    --stack-name leboncoincoin-backend-prod \
     --capabilities CAPABILITY_IAM \
     --parameter-overrides \
         DbUrl=$DB_URL \
@@ -300,15 +322,17 @@ mvn clean install
 
 ### What's Tested
 
-✅ **Happy Path** : Create → Read → Update → Delete  
-✅ **Filters** : Category, Location, Price, Search  
-✅ **Validation** : Required fields, data types  
-✅ **Errors** : 404, 400, 422  
-✅ **Authentication** : Auto test user injection  
+✅ **Happy Path** : Create → Read → Update → Delete
+✅ **Filters** : Category, Location, Price, Search
+✅ **Validation** : Required fields, data types
+✅ **Errors** : 404, 400, 422
+✅ **Authentication** : Auto test user injection
 
 ### Test Coverage
 
 - `ListingResourceTest` - 12 tests covering full CRUD lifecycle
+- `ConversationResourceTest`
+- `FavoriteResourceTest`
 - RestAssured integration tests
 - No JWT tokens required (auto test user)
 - PostgreSQL required (via docker-compose)
@@ -333,6 +357,7 @@ mvn clean install
 - **AWS Lambda** - Serverless compute
 - **AWS RDS** - Managed PostgreSQL
 - **AWS S3** - Object storage for images
+- **Amazon SES** - Email service
 - **Clerk** - Modern authentication platform
 - **Jakarta EE** - REST, CDI, Validation APIs
 
@@ -342,7 +367,7 @@ mvn clean install
 
 ```bash
 aws rds modify-db-instance \
-    --db-instance-identifier lmc-db-prod \
+    --db-instance-identifier leboncoincoin-db-prod \
     --enable-performance-insights \
     --performance-insights-retention-period 7
 ```
@@ -373,7 +398,7 @@ docker-compose up -d
 docker-compose down
 
 # View database logs
-docker logs lmc-postgres
+docker logs leboncoincoin-postgres
 
 # Run Quarkus in dev mode (with live reload)
 mvn quarkus:dev
@@ -382,7 +407,7 @@ mvn quarkus:dev
 mvn clean package -DskipTests
 
 # Connect to local PostgreSQL
-psql -h localhost -U lmc_user -d lmc_db
+psql -h localhost -U leboncoincoin_user -d leboncoincoin_db
 
 # Run Flyway migrations manually
 mvn flyway:migrate
@@ -394,11 +419,11 @@ mvn flyway:migrate
 
 ```bash
 # Test PostgreSQL connection
-psql -h localhost -p 5432 -U lmc_user -d lmc_db
+psql -h localhost -p 5432 -U leboncoincoin_user -d leboncoincoin_db
 
 # Check Docker containers
 docker ps
-docker logs lmc-postgres
+docker logs leboncoincoin-postgres
 ```
 
 ### Migration Failures
@@ -425,3 +450,6 @@ MIT
 ## 🤝 Contributing
 
 Contributions welcome! Please open an issue or PR.
+
+---
+**Built with 🦆 LeBonCoinCoin**

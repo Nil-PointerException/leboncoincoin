@@ -1,6 +1,6 @@
-# 🏗️ LMC - Modern Classified Ads Platform
+# 🏗️ LeBonCoinCoin - Modern Classified Ads Platform
 
-A full-stack, cloud-native classified-ads platform (similar to Kleinanzeigen) built with modern technologies and designed for France.
+A full-stack, cloud-native classified-ads platform (similar to Kleinanzeigen) built with modern technologies and designed for France. 🦆
 
 ## 📐 Architecture Overview
 
@@ -31,13 +31,14 @@ A full-stack, cloud-native classified-ads platform (similar to Kleinanzeigen) bu
 ## 🚀 Tech Stack
 
 ### Backend
-- **Language**: Java 23
+- **Language**: Java 21 (Amazon Corretto 21)
 - **Framework**: Quarkus 3.16+ (Serverless/AWS Lambda)
 - **Database**: PostgreSQL 16 (AWS RDS)
 - **ORM**: Panache (Hibernate-based)
 - **Migrations**: Flyway
 - **Storage**: AWS S3 (presigned URLs)
 - **Auth**: Clerk JWT validation (OIDC)
+- **Email**: Amazon SES (Prod) / MailHog (Dev)
 - **API**: RESTful with reactive endpoints
 
 ### Frontend
@@ -51,12 +52,12 @@ A full-stack, cloud-native classified-ads platform (similar to Kleinanzeigen) bu
 ## 📂 Project Structure
 
 ```
-lmc-backend/
+leboncoincoin-backend/
 ├── backend/              # Quarkus Java backend
 │   ├── src/
 │   │   └── main/
-│   │       ├── java/com/lmc/
-│   │       │   ├── domain/        # JPA Entities
+│   │       ├── java/com/leboncoincoin/
+│   │       │   ├── entity/        # JPA Entities
 │   │       │   ├── repository/    # Panache repositories
 │   │       │   ├── service/       # Business logic
 │   │       │   ├── resource/      # REST endpoints
@@ -87,7 +88,7 @@ lmc-backend/
 
 ## ✨ Features
 
-### MVP Features (Implemented)
+### Implemented Features
 
 #### Public
 - ✅ Browse all listings
@@ -102,6 +103,9 @@ lmc-backend/
 - ✅ View user profile
 - ✅ View own listings
 - ✅ Delete own listings
+- ✅ Messaging system between users
+- ✅ Favorites/Watchlist
+- ✅ Email notifications (Welcome email)
 
 ## 🏃 Getting Started
 
@@ -112,8 +116,7 @@ Pour un développement rapide **sans AWS ni Clerk** :
 ```bash
 # Backend avec MinIO (S3 local) et auth désactivée
 cd backend
-chmod +x start-dev.sh
-./start-dev.sh
+mvn quarkus:dev
 ```
 
 **✨ Le profil dev inclut :**
@@ -121,6 +124,7 @@ chmod +x start-dev.sh
 - ✅ Authentification désactivée - utilisateur de test automatique
 - ✅ PostgreSQL local - avec Docker
 - ✅ Console MinIO - http://localhost:9001
+- ✅ MailHog (Emails) - http://localhost:8025
 - ✅ Hot reload - modifications instantanées
 
 **📖 Documentation complète :** [backend/DEV_PROFILE.md](backend/DEV_PROFILE.md)
@@ -133,7 +137,7 @@ Si vous voulez tester avec Clerk et AWS S3 :
 
 ### Prerequisites
 
-- **Java 23** (for backend)
+- **Java 21** (Amazon Corretto 21 recommended for backend)
 - **Maven 3.9+** (for backend)
 - **Docker & Docker Compose** (for local PostgreSQL)
 - **Node.js 18+** (for frontend)
@@ -149,9 +153,9 @@ cd backend
 docker-compose up -d
 
 # Configure environment variables
-export DB_URL=jdbc:postgresql://localhost:5432/lmc_db
-export DB_USERNAME=lmc_user
-export DB_PASSWORD=lmc_password
+export DB_URL=jdbc:postgresql://localhost:5432/leboncoincoin_db
+export DB_USERNAME=leboncoincoin_user
+export DB_PASSWORD=leboncoincoin_password
 export CLERK_CLIENT_ID=your-clerk-client-id
 export CLERK_CLIENT_SECRET=your-clerk-client-secret
 export CLERK_DOMAIN=your-domain.clerk.accounts.dev
@@ -211,11 +215,24 @@ Frontend will run on: http://localhost:5173
 - listing_id (FK → listings)
 - image_url (VARCHAR)
 
-**messages** (future implementation)
+**conversations**
 - id (PK, UUID)
 - listing_id (FK → listings)
-- from_user_id, to_user_id (FK → users)
+- buyer_id, seller_id (FK → users)
+- created_at, updated_at (TIMESTAMP)
+
+**messages**
+- id (PK, UUID)
+- conversation_id (FK → conversations)
+- sender_id (FK → users)
 - content (TEXT)
+- sent_at (TIMESTAMP)
+- is_read (BOOLEAN)
+
+**favorites**
+- id (PK, UUID)
+- user_id (FK → users)
+- listing_id (FK → listings)
 - created_at (TIMESTAMP)
 
 ### Indexes for Performance
@@ -237,6 +254,9 @@ Frontend will run on: http://localhost:5173
 - `GET /api/me` - Get current user
 - `GET /api/me/listings` - Get user's listings
 - `POST /api/uploads/presigned-url` - Get S3 upload URL
+- `GET /api/conversations` - Get user conversations
+- `POST /api/conversations` - Create conversation
+- `GET /api/favorites` - Get user favorites
 
 ## 🚢 Deployment
 
@@ -304,7 +324,7 @@ Flyway manages database schema:
 # Format: V{version}__{description}.sql
 
 # Create new migration
-touch backend/src/main/resources/db/migration/V1.0.2__add_feature.sql
+touch backend/src/main/resources/db/migration/V1.0.4__add_feature.sql
 
 # Migrations run automatically on app startup
 ```
@@ -312,9 +332,6 @@ touch backend/src/main/resources/db/migration/V1.0.2__add_feature.sql
 ## 🛣️ Roadmap
 
 ### Phase 2 (Future)
-- [ ] Messaging system between users
-- [ ] Favorites/Watchlist
-- [ ] Email notifications
 - [ ] Advanced search (full-text)
 - [ ] Admin dashboard
 - [ ] Payment integration
@@ -343,4 +360,4 @@ For issues and questions, please open a GitHub issue.
 
 ---
 
-**Built with ❤️ using modern, cloud-native technologies**
+**Built with ❤️ and 🦆 using modern, cloud-native technologies**

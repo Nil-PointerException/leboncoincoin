@@ -73,8 +73,16 @@ export const listingsApi = {
     return data
   },
 
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/listings/${id}`)
+  update: async (id: string, request: CreateListingRequest): Promise<Listing> => {
+    const { data } = await api.put(`/listings/${id}`, request)
+    return data
+  },
+
+  delete: async (id: string, feedback: {
+    reason: 'SOLD' | 'NO_LONGER_AVAILABLE' | 'OTHER'
+    wasSold: boolean | null
+  }): Promise<void> => {
+    await api.delete(`/listings/${id}`, { data: feedback })
   },
 }
 

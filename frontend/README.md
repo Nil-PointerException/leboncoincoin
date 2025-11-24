@@ -1,13 +1,15 @@
-# LMC Frontend - Classified Ads Platform
+# LeBonCoinCoin Frontend - Classified Ads Platform
 
-A modern, minimal React frontend for a classified-ads platform built with **Vite**, **React**, **TypeScript**, **Material UI**, and **Clerk** authentication.
+A modern, minimal React frontend for a classified-ads platform built with **Vite**, **React**, **TypeScript**, **Material UI**, and **Clerk** authentication. 🦆
 
 ## 🎨 Features
 
 - **Home Page**: Browse all listings with advanced filters
-- **Listing Details**: View detailed information about each listing
+- **Listing Details**: View detailed information about each listing, send messages
 - **Create Listing**: Post new ads with image upload to S3
-- **User Profile**: View and manage your listings
+- **User Profile**: View and manage your listings, view favorites
+- **Messaging**: Real-time messaging system between buyers and sellers
+- **Favorites**: Save listings to your favorites list
 - **Authentication**: Secure login/signup with Clerk
 
 ## 🏗️ Tech Stack
@@ -29,14 +31,20 @@ frontend/
 │   │   ├── Navbar.tsx
 │   │   ├── ProtectedRoute.tsx
 │   │   ├── ListingCard.tsx
-│   │   └── ListingFilters.tsx
+│   │   ├── ListingFilters.tsx
+│   │   ├── ConversationList.tsx
+│   │   └── MessageList.tsx
 │   ├── pages/             # Page components
 │   │   ├── HomePage.tsx
 │   │   ├── ListingDetailPage.tsx
 │   │   ├── CreateListingPage.tsx
-│   │   └── ProfilePage.tsx
+│   │   ├── ProfilePage.tsx
+│   │   ├── ConversationPage.tsx
+│   │   └── FavoritesPage.tsx
 │   ├── services/          # API services
-│   │   └── api.ts
+│   │   ├── api.ts
+│   │   ├── conversation.service.ts
+│   │   └── favorite.service.ts
 │   ├── types/             # TypeScript types
 │   │   └── index.ts
 │   ├── App.tsx            # Main app component
@@ -96,6 +104,8 @@ The frontend communicates with the backend API through the `/api` proxy configur
 - `GET /api/me` - Get current user (authenticated)
 - `GET /api/me/listings` - Get current user's listings (authenticated)
 - `POST /api/uploads/presigned-url` - Get S3 presigned URL (authenticated)
+- `GET /api/conversations` - Get conversations (authenticated)
+- `GET /api/favorites` - Get favorites (authenticated)
 
 ## 🔐 Authentication Flow
 
@@ -115,6 +125,8 @@ The frontend communicates with the backend API through the `/api` proxy configur
 ### Listing Detail (`/listings/:id`)
 - Full listing information with image gallery
 - Delete button for listing owners
+- "Envoyer un message" button for buyers
+- "Ajouter aux favoris" button
 - Responsive layout with sidebar
 
 ### Create Listing (`/create`)
@@ -129,12 +141,19 @@ The frontend communicates with the backend API through the `/api` proxy configur
 - Grid of user's listings
 - Quick access to manage listings
 
+### Messages (`/messages`)
+- List of conversations
+- Real-time chat interface
+
+### Favorites (`/favorites`)
+- List of saved listings
+
 ## 🎨 Styling & Theme
 
 The app uses a custom Material UI theme defined in `src/theme.ts`:
 
-- **Primary Color**: Blue (#1976d2)
-- **Secondary Color**: Pink (#dc004e)
+- **Primary Color**: Orange (#ff6e14) - LeBonCoinCoin Brand Color
+- **Secondary Color**: Blue (#4183c4)
 - **Typography**: System fonts with custom weights
 - **Components**: Customized buttons and cards
 
@@ -166,7 +185,7 @@ The optimized production build will be in the `dist/` directory.
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `VITE_CLERK_PUBLISHABLE_KEY` | Clerk public key | `pk_test_...` |
-| `VITE_API_BASE_URL` | Backend API URL | `https://api.lmc.com/api` |
+| `VITE_API_BASE_URL` | Backend API URL | `https://api.leboncoincoin.com/api` |
 
 ## 🧪 Development Notes
 

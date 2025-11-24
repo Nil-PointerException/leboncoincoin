@@ -13,3 +13,5 @@ CREATE TABLE favorites (
 CREATE INDEX idx_favorites_user_id ON favorites(user_id);
 CREATE INDEX idx_favorites_listing_id ON favorites(listing_id);
 
+
+

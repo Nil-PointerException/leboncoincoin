@@ -92,7 +92,7 @@ public class EmailService {
 
         String from = String.format("%s <%s>", 
                 fromName.orElse("LMC Annonces"), 
-                fromEmail.orElse("noreply@lmc.local"));
+                fromEmail.orElse("noreply@leboncoincoin.local"));
         
         Mail mail = Mail.withHtml(to, subject, htmlContent)
                 .setFrom(from);
@@ -134,7 +134,7 @@ public class EmailService {
 
         String source = String.format("%s <%s>", 
                 fromName.orElse("LMC Annonces"), 
-                fromEmail.orElse("noreply@lmc.local"));
+                fromEmail.orElse("noreply@leboncoincoin.local"));
 
         SendEmailRequest emailRequest = SendEmailRequest.builder()
                 .source(source)

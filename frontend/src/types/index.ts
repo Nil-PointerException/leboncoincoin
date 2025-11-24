@@ -8,12 +8,14 @@ export interface Listing {
   imageUrls: string[]
   userId: string
   createdAt: string
+  updatedAt: string
 }
 
 export interface User {
   id: string
   email: string
   name: string
+  role: 'USER' | 'ADMIN'
   createdAt: string
 }
 

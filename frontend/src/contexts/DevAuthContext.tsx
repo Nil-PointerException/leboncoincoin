@@ -13,11 +13,11 @@ const devUserData: Partial<UserResource> = {
   firstName: 'Dev',
   lastName: 'User',
   primaryEmailAddress: {
-    emailAddress: 'dev@lmc.local',
+    emailAddress: 'dev@leboncoincoin.local',
     id: 'email-dev',
   } as any,
   emailAddresses: [{
-    emailAddress: 'dev@lmc.local',
+    emailAddress: 'dev@leboncoincoin.local',
     id: 'email-dev',
   }] as any[],
   imageUrl: 'https://www.gravatar.com/avatar/dev?s=200&d=mp',
@@ -74,5 +74,6 @@ export function useUser() {
     user: context.user,
   }
 }
+
 
 
