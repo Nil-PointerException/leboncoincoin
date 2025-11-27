@@ -16,6 +16,7 @@ Globals:
         QUARKUS_HTTP_CORS_ENABLED: "false"
   HttpApi:
     CorsConfiguration:
+      AllowCredentials: true
       AllowOrigins:
         - "http://localhost:5173"
         - "https://master.d1edk4x9k6kvah.amplifyapp.com"

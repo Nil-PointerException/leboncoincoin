@@ -27,7 +27,7 @@ quarkus:
       redirect-path: /login
       scopes: openid,email,profile
 
-  # Database (PostgreSQL)
+  # Database (PostgreSQL) - Configuration par défaut
   datasource:
     db-kind: postgresql
     username: ${DB_USERNAME:leboncoincoin_user}
@@ -56,17 +56,16 @@ quarkus:
       region: ${AWS_REGION:eu-west-3}
       credentials:
         type: default
-    # Enable path-style access for MinIO compatibility
     path-style-access: ${S3_PATH_STYLE:false}
 
-  # SES (for production email sending)
+  # SES
   ses:
     aws:
       region: ${AWS_REGION:eu-west-3}
       credentials:
         type: default
 
-  # Mailer (SMTP for development)
+  # Mailer
   mailer:
     from: ${EMAIL_FROM:noreply@leboncoincoin.com}
     host: ${SMTP_HOST:localhost}
@@ -101,33 +100,28 @@ quarkus:
 app:
   s3:
     bucket-name: ${S3_BUCKET_NAME:leboncoincoin-images}
-    presigned-url-expiration: 300 # 5 minutes in seconds
+    presigned-url-expiration: 300
   email:
-    provider: ${EMAIL_PROVIDER:smtp} # "smtp" for dev (MailHog), "ses" for prod
+    provider: ${EMAIL_PROVIDER:smtp}
     from: ${EMAIL_FROM:noreply@leboncoincoin.com}
     from-name: ${EMAIL_FROM_NAME:LeBonCoinCoin}
     welcome-enabled: ${EMAIL_WELCOME_ENABLED:true}
   messaging:
     allow-self-messaging: ${ALLOW_SELF_MESSAGING:false}
 
-# Development profile (local testing with MinIO and test auth)
+# --- PROFILES ---
+
+# Development profile
 "%dev":
   quarkus:
-    # Disable OIDC authentication in dev mode
     oidc:
       enabled: false
-    
-    # Security configuration for dev mode
     security:
-      # Allow security annotations to work without real auth
       auth:
         enabled-in-dev-mode: true
-      # Use custom dev authentication mechanism
       users:
         embedded:
           enabled: false
-    
-    # Use local MinIO as S3
     s3:
       endpoint-override: http://localhost:9000
       aws:
@@ -137,13 +131,9 @@ app:
           static-provider:
             access-key-id: minioadmin
             secret-access-key: minioadmin
-    
-    # Enable SQL logging for debugging
     hibernate-orm:
       log:
         sql: true
-    
-    # Verbose logging for dev
     log:
       level: DEBUG
       category:
@@ -151,19 +141,15 @@ app:
           level: DEBUG
         "io.quarkus.oidc":
           level: DEBUG
-    
-    # CORS for local frontend
     http:
       cors:
         origins: http://localhost:5173,http://localhost:3000
-  
-  # Dev-specific app configuration
   app:
     s3:
       bucket-name: leboncoincoin-images
-      presigned-url-expiration: 3600 # 1 hour for easier testing
+      presigned-url-expiration: 3600
     email:
-      provider: smtp # Use MailHog in dev
+      provider: smtp
       from: dev@leboncoincoin.local
       from-name: LeBonCoinCoin (Dev)
     dev:
@@ -172,10 +158,9 @@ app:
       test-user-email: dev@leboncoincoin.local
       test-user-name: Dev User
 
-# Clerk profile (for local development with Clerk authentication)
+# Clerk profile
 "%clerk":
   quarkus:
-    # Enable OIDC authentication with Clerk
     oidc:
       enabled: true
       auth-server-url: ${CLERK_AUTH_SERVER_URL:https://YOUR_DOMAIN.clerk.accounts.dev}
@@ -184,9 +169,7 @@ app:
         issuer: ${CLERK_ISSUER:https://YOUR_DOMAIN.clerk.accounts.dev}
         audience: ${CLERK_AUDIENCE:}
       tls:
-        verification: none  # Use 'none' for local dev, 'required' for production
-    
-    # Use local MinIO as S3
+        verification: none
     s3:
       endpoint-override: http://localhost:9000
       path-style-access: true
@@ -197,13 +180,9 @@ app:
           static-provider:
             access-key-id: minioadmin
             secret-access-key: minioadmin
-    
-    # Enable SQL logging for debugging
     hibernate-orm:
       log:
         sql: true
-    
-    # Verbose logging
     log:
       level: DEBUG
       category:
@@ -213,62 +192,45 @@ app:
           level: DEBUG
         "io.quarkus.security":
           level: DEBUG
-    
-    # CORS for local frontend
     http:
       cors:
         origins: http://localhost:5173,http://localhost:3000
-  
-  # Clerk profile app configuration
   app:
     s3:
       bucket-name: leboncoincoin-images
       presigned-url-expiration: 3600
     email:
-      provider: smtp # Use MailHog in clerk profile too
+      provider: smtp
       from: dev@leboncoincoin.local
       from-name: LeBonCoinCoin (Clerk Dev)
     dev:
-      auth-enabled: true  # Disable dev auth, use real OIDC
+      auth-enabled: true
       test-user-id: ""
 
-# Test profile (for unit/integration tests)
+# Test profile
 "%test":
   quarkus:
-    # Disable OIDC authentication in test mode
     oidc:
       enabled: false
-    
-    # Security configuration for test mode
     security:
-      # Allow security annotations to work without real auth
       auth:
         enabled-in-dev-mode: true
-      # Use custom dev authentication mechanism
       users:
         embedded:
           enabled: false
-    
-    # Use in-memory H2 or local PostgreSQL for tests
     datasource:
       db-kind: postgresql
       username: ${DB_USERNAME:leboncoincoin_user}
       password: ${DB_PASSWORD:leboncoincoin_password}
       jdbc:
         url: ${DB_URL:jdbc:postgresql://localhost:5432/leboncoincoin_db}
-    
-    # Hibernate configuration for tests
     hibernate-orm:
       database:
         generation: drop-and-create
       log:
         sql: true
-    
-    # Flyway - skip for tests (we use drop-and-create)
     flyway:
       migrate-at-start: false
-    
-    # Use local MinIO for tests
     s3:
       endpoint-override: http://localhost:9000
       path-style-access: true
@@ -279,53 +241,66 @@ app:
           static-provider:
             access-key-id: minioadmin
             secret-access-key: minioadmin
-    
-    # Test logging
     log:
       level: INFO
       category:
         "com.leboncoincoin":
           level: DEBUG
-  
-  # Test-specific app configuration
   app:
     s3:
       bucket-name: leboncoincoin-images
       presigned-url-expiration: 300
     email:
-      provider: smtp # Use mock SMTP in tests
+      provider: smtp
       from: test@leboncoincoin.local
       from-name: LeBonCoinCoin (Test)
-      welcome-enabled: false # Disable welcome emails in tests
+      welcome-enabled: false
     messaging:
-      allow-self-messaging: true # Allow same user to be buyer and seller in tests
+      allow-self-messaging: true
     dev:
       auth-enabled: false
       test-user-id: test-user-123
       test-user-email: test@leboncoincoin.local
       test-user-name: Test User
 
-# Production profile (for AWS Lambda + RDS)
 "%prod":
   quarkus:
+    # 1. Base de données : Configuration robuste pour Lambda SnapStart
     datasource:
       jdbc:
         url: ${DB_URL}
-        max-size: 5  # Optimized for Lambda (1 instance = 1 connection, pool of 5 is sufficient)
-        min-size: 1
-        # Connection pool settings optimized for Lambda
+        # On utilise les variables d'env définies dans template.yaml
+        initial-size: ${QUARKUS_DATASOURCE_JDBC_INITIAL_SIZE:0}
+        min-size: ${QUARKUS_DATASOURCE_JDBC_MIN_SIZE:0}
+        max-size: ${QUARKUS_DATASOURCE_JDBC_MAX_SIZE:2}
+
+        # CRITIQUE : Tester la connexion avant utilisation (évite les erreurs 500)
+        test-on-borrow: true
+        validation-query-sql: "SELECT 1"
+
+        # Nettoyage agressif des connexions inactives
         background-validation-interval: PT1M
-        idle-removal-interval: PT5M
-        max-lifetime: PT30M
-        leak-detection-interval: PT10M
+        idle-removal-interval: PT1M
+        max-lifetime: PT10M
       username: ${DB_USERNAME}
       password: ${DB_PASSWORD}
+
+    # 2. Migration : Désactivée au démarrage (gérée manuellement ou via pipeline)
+    flyway:
+      migrate-at-start: false
+
+    # 3. CORS : Désactivé (C'est API Gateway qui gère ça, sinon conflit !)
+    http:
+      cors:
+        enabled: false
+
     hibernate-orm:
       database:
         generation: none
       log:
         sql: false
-    # Optimize logging for production
+
+    # Logging optimisé pour CloudWatch
     log:
       level: INFO
       category:
@@ -337,21 +312,16 @@ app:
           level: INFO
       console:
         enable: true
+        # Format JSON ou simple pour CloudWatch
         format: "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{2.}] (%t) %s%e%n"
-    # Ensure OIDC is enabled in production
+
+    # OIDC activé
     oidc:
       enabled: ${OIDC_ENABLED:true}
       tls:
         verification: ${OIDC_TLS_VERIFICATION:required}
-    # CORS for production frontend
-    http:
-      cors:
-        origins: ${CORS_ORIGINS}
-        methods: GET,POST,PUT,DELETE,OPTIONS
-        headers: accept,authorization,content-type,x-requested-with
-        exposed-headers: Content-Disposition
-        access-control-max-age: 86400
-  # Production app configuration
+
+  # App Config Prod
   app:
     email:
       provider: ${EMAIL_PROVIDER:ses}
@@ -360,5 +330,4 @@ app:
       welcome-enabled: ${EMAIL_WELCOME_ENABLED:true}
     s3:
       bucket-name: ${S3_BUCKET_NAME:leboncoincoin-images}
-      presigned-url-expiration: 300  # 5 minutes for production
-
+      presigned-url-expiration: 300

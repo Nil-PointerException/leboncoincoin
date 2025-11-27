@@ -10,11 +10,9 @@ import {
   TextField,
   Button,
   Avatar,
-  Chip,
   CircularProgress,
   Alert,
-  IconButton,
-  Divider,
+  IconButton
 } from '@mui/material'
 import SendIcon from '@mui/icons-material/Send'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'

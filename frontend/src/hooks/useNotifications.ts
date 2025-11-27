@@ -33,12 +33,13 @@ export function useNotifications() {
         // Fetch unread messages count
         try {
           const conversations = await messagingApi.getUserConversations()
-          // Count conversations with unread messages
-          const unreadCount = conversations.reduce((count, conv) => {
-            // This would require backend support to track unread status
-            // For now, we'll just return 0
-            return count
+
+          // CORRECTION : On additionne les messages non lus de chaque conversation
+          // Ton backend Java renvoie un champ 'unreadCount' dans le JSON
+          const unreadCount = conversations.reduce((total, conv) => {
+            return total + (conv.unreadCount || 0)
           }, 0)
+
           setUnreadMessagesCount(unreadCount)
         } catch (err) {
           console.error('Error fetching messages:', err)
