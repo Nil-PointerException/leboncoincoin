@@ -18,7 +18,7 @@ import { favoritesApi } from '@/services/api'
 import { useAuthSafe } from '@/hooks/useAuthSafe'
 import { DuckCard, CategoryChip } from './ui'
 import { getCategoryIcon } from '@/constants/categoryIcons'
-import { formatPrice } from '@/utils/formatPrice'
+import { formatPrice } from '@/utils'
 
 interface ListingCardProps {
   listing: Listing

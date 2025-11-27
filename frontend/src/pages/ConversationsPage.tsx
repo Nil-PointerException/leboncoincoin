@@ -23,7 +23,7 @@ import MessageIcon from '@mui/icons-material/Message'
 import { messagingApi } from '@/services/messagingApi'
 import { setAuthToken } from '@/services/api'
 import type { ConversationWithListing } from '@/types/messaging'
-import { formatPrice } from '@/utils/formatPrice'
+import { formatPrice } from '@/utils'
 
 export default function ConversationsPage() {
   const navigate = useNavigate()

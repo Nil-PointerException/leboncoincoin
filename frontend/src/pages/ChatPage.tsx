@@ -19,7 +19,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { messagingApi } from '@/services/messagingApi'
 import { setAuthToken } from '@/services/api'
 import type { ConversationWithListing, Message } from '@/types/messaging'
-import { formatPrice } from '@/utils/formatPrice'
+import { formatPrice } from '@/utils'
 
 export default function ChatPage() {
   const { conversationId } = useParams<{ conversationId: string }>()

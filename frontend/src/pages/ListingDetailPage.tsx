@@ -31,7 +31,7 @@ import { messagingApi } from '@/services/messagingApi'
 import type { Listing } from '@/types'
 import ImageSlider from '@/components/ImageSlider'
 import { getCategoryIcon } from '@/constants/categoryIcons'
-import { formatPrice } from '@/utils/formatPrice'
+import { formatPrice } from '@/utils'
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>()
