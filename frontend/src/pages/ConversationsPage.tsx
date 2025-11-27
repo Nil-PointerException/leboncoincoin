@@ -23,6 +23,7 @@ import MessageIcon from '@mui/icons-material/Message'
 import { messagingApi } from '@/services/messagingApi'
 import { setAuthToken } from '@/services/api'
 import type { ConversationWithListing } from '@/types/messaging'
+import { formatPrice } from '@/utils/formatPrice'
 
 export default function ConversationsPage() {
   const navigate = useNavigate()
@@ -121,18 +122,40 @@ export default function ConversationsPage() {
               {conversations.map((conversation, index) => (
                 <Box key={conversation.id}>
                   <ListItem disablePadding>
-                    <ListItemButton onClick={() => navigate(`/conversations/${conversation.id}`)}>
-                      <ListItemAvatar>
+                    <ListItemButton 
+                      onClick={() => navigate(`/conversations/${conversation.id}`)}
+                      sx={{
+                        py: 2,
+                        px: 2,
+                        '&:hover': {
+                          bgcolor: 'grey.50',
+                        },
+                      }}
+                    >
+                      <ListItemAvatar sx={{ minWidth: 64 }}>
                         <Badge
                           badgeContent={conversation.unreadCount}
                           color="error"
                           invisible={conversation.unreadCount === 0}
+                          sx={{
+                            '& .MuiBadge-badge': {
+                              fontSize: '0.7rem',
+                              height: '18px',
+                              minWidth: '18px',
+                              fontWeight: 700,
+                            },
+                          }}
                         >
                           <Avatar
                             src={conversation.listing?.imageUrls?.[0]}
                             alt={conversation.listing?.title}
                             variant="rounded"
-                            sx={{ width: 56, height: 56 }}
+                            sx={{ 
+                              width: 56, 
+                              height: 56,
+                              border: '2px solid',
+                              borderColor: 'grey.200',
+                            }}
                           >
                             <MessageIcon />
                           </Avatar>
@@ -140,17 +163,33 @@ export default function ConversationsPage() {
                       </ListItemAvatar>
                       <ListItemText
                         primary={
-                          <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Typography variant="subtitle1" fontWeight={conversation.unreadCount > 0 ? 700 : 400}>
+                          <Box display="flex" justifyContent="space-between" alignItems="center" gap={2}>
+                            <Typography 
+                              variant="subtitle1" 
+                              fontWeight={conversation.unreadCount > 0 ? 700 : 600}
+                              sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                flex: 1,
+                              }}
+                            >
                               {conversation.listing?.title || 'Annonce supprimée'}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography 
+                              variant="caption" 
+                              color="text.secondary"
+                              sx={{
+                                flexShrink: 0,
+                                fontSize: '0.75rem',
+                              }}
+                            >
                               {conversation.lastMessage && formatDate(conversation.lastMessage.sentAt)}
                             </Typography>
                           </Box>
                         }
                         secondary={
-                          <Box>
+                          <Box sx={{ mt: 0.5 }}>
                             <Typography
                               variant="body2"
                               color="text.secondary"
@@ -159,23 +198,42 @@ export default function ConversationsPage() {
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                                 fontWeight: conversation.unreadCount > 0 ? 600 : 400,
+                                mb: 1,
+                                fontSize: '0.875rem',
                               }}
                             >
                               {conversation.lastMessage?.content || 'Aucun message'}
                             </Typography>
-                            <Box display="flex" gap={1} mt={0.5}>
-                              <Chip label={getOtherUserLabel(conversation)} size="small" variant="outlined" />
+                            <Box display="flex" gap={1} flexWrap="wrap">
+                              <Chip 
+                                label={getOtherUserLabel(conversation)} 
+                                size="small" 
+                                variant="outlined"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.7rem',
+                                }}
+                              />
                               {conversation.listing && (
                                 <Chip
-                                  label={`${conversation.listing.price.toFixed(2)} €`}
+                                  label={`${formatPrice(conversation.listing.price)} €`}
                                   size="small"
                                   color="primary"
                                   variant="outlined"
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '0.7rem',
+                                  }}
                                 />
                               )}
                             </Box>
                           </Box>
                         }
+                        sx={{
+                          '& .MuiListItemText-primary': {
+                            mb: 0.5,
+                          },
+                        }}
                       />
                     </ListItemButton>
                   </ListItem>

@@ -18,6 +18,7 @@ import { favoritesApi } from '@/services/api'
 import { useAuthSafe } from '@/hooks/useAuthSafe'
 import { DuckCard, CategoryChip } from './ui'
 import { getCategoryIcon } from '@/constants/categoryIcons'
+import { formatPrice } from '@/utils/formatPrice'
 
 interface ListingCardProps {
   listing: Listing
@@ -77,14 +78,6 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
   }
 
   const imageUrl = listing.imageUrls?.[0] || 'https://via.placeholder.com/400x300?text=🦆+Pas+d\'image'
-
-  // Format price without unnecessary .00
-  const formatPrice = (price: number): string => {
-    if (price % 1 === 0) {
-      return price.toString()
-    }
-    return price.toFixed(2)
-  }
 
   // Format date
   const formatDate = (dateString: string) => {

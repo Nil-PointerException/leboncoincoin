@@ -31,6 +31,7 @@ import { messagingApi } from '@/services/messagingApi'
 import type { Listing } from '@/types'
 import ImageSlider from '@/components/ImageSlider'
 import { getCategoryIcon } from '@/constants/categoryIcons'
+import { formatPrice } from '@/utils/formatPrice'
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -182,14 +183,6 @@ export default function ListingDetailPage() {
     ? listing.imageUrls 
     : ['https://via.placeholder.com/800x600?text=No+Image']
 
-  // Format price without unnecessary .00
-  const formatPrice = (price: number): string => {
-    if (price % 1 === 0) {
-      return price.toString()
-    }
-    return price.toFixed(2)
-  }
-
   const CategoryIcon = getCategoryIcon(listing.category)
 
   return (
@@ -211,7 +204,7 @@ export default function ListingDetailPage() {
               </Typography>
 
               <Typography variant="h3" color="primary" gutterBottom fontWeight={700}>
-                {listing.price ? formatPrice(listing.price) : '0'} €
+                {listing.price ? `${formatPrice(listing.price)} €` : '0 €'}
               </Typography>
 
               <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>

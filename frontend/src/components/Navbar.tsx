@@ -67,12 +67,14 @@ export default function Navbar() {
                 alignItems: 'center',
                 gap: 1,
                 transition: 'transform 0.2s',
+                userSelect: 'none',
                 '&:hover': { transform: 'scale(1.05)' },
               }}
               onClick={() => navigate('/')}
             >
               <Typography
                 variant="h5"
+                component="div"
                 sx={{
                   fontWeight: 800,
                   background: 'linear-gradient(135deg, #FFD700 0%, #FF9500 100%)',
@@ -81,10 +83,12 @@ export default function Navbar() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1,
+                  userSelect: 'none',
+                  pointerEvents: 'none',
                 }}
               >
-                <span style={{ fontSize: '1.5rem' }}>🦆</span>
-                LeBonCoinCoin
+                <span style={{ fontSize: '1.5rem', userSelect: 'none', pointerEvents: 'none' }}>🦆</span>
+                <span style={{ userSelect: 'none', pointerEvents: 'none' }}>LeBonCoinCoin</span>
               </Typography>
               {isDev && (
                 <Box

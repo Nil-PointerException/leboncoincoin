@@ -19,6 +19,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { messagingApi } from '@/services/messagingApi'
 import { setAuthToken } from '@/services/api'
 import type { ConversationWithListing, Message } from '@/types/messaging'
+import { formatPrice } from '@/utils/formatPrice'
 
 export default function ChatPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
@@ -133,23 +134,57 @@ export default function ChatPage() {
   return (
     <Container maxWidth="md" sx={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', py: 2 }}>
       {/* Header */}
-      <Paper sx={{ p: 2, mb: 2 }}>
+      <Paper 
+        sx={{ 
+          p: 2, 
+          mb: 2,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        }}
+      >
         <Box display="flex" alignItems="center" gap={2}>
-          <IconButton onClick={() => navigate('/conversations')}>
+          <IconButton 
+            onClick={() => navigate('/conversations')}
+            sx={{
+              '&:hover': {
+                bgcolor: 'grey.100',
+              },
+            }}
+          >
             <ArrowBackIcon />
           </IconButton>
           <Avatar
             src={conversation.listing?.imageUrls?.[0]}
             alt={conversation.listing?.title}
             variant="rounded"
-            sx={{ width: 48, height: 48 }}
+            sx={{ 
+              width: 56, 
+              height: 56,
+              border: '2px solid',
+              borderColor: 'grey.200',
+            }}
           />
-          <Box flexGrow={1}>
-            <Typography variant="h6" fontWeight={600}>
+          <Box flexGrow={1} minWidth={0}>
+            <Typography 
+              variant="h6" 
+              fontWeight={600}
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               {conversation.listing?.title || 'Annonce supprimée'}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {conversation.listing && `${conversation.listing.price.toFixed(2)} €`}
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {conversation.listing && `${formatPrice(conversation.listing.price)} €`}
             </Typography>
           </Box>
           <Button
@@ -157,6 +192,9 @@ export default function ChatPage() {
             size="small"
             onClick={() => navigate(`/listings/${conversation.listingId}`)}
             disabled={!conversation.listing}
+            sx={{
+              flexShrink: 0,
+            }}
           >
             Voir l'annonce
           </Button>
@@ -173,6 +211,7 @@ export default function ChatPage() {
           display: 'flex',
           flexDirection: 'column',
           gap: 2,
+          bgcolor: 'grey.50',
         }}
       >
         {messages.length === 0 ? (
@@ -182,44 +221,94 @@ export default function ChatPage() {
             </Typography>
           </Box>
         ) : (
-          messages.map((message) => (
-            <Box
-              key={message.id}
-              display="flex"
-              justifyContent={isOwnMessage(message) ? 'flex-end' : 'flex-start'}
-            >
+          messages.map((message) => {
+            const isOwn = isOwnMessage(message)
+            return (
               <Box
+                key={message.id}
+                display="flex"
+                justifyContent={isOwn ? 'flex-end' : 'flex-start'}
+                alignItems="flex-end"
+                gap={1.5}
                 sx={{
-                  maxWidth: '70%',
-                  p: 1.5,
-                  borderRadius: 2,
-                  bgcolor: isOwnMessage(message) ? 'primary.main' : 'grey.200',
-                  color: isOwnMessage(message) ? 'white' : 'text.primary',
+                  flexDirection: isOwn ? 'row-reverse' : 'row',
                 }}
               >
-                <Typography variant="body1" sx={{ wordBreak: 'break-word' }}>
-                  {message.content}
-                </Typography>
-                <Typography
-                  variant="caption"
+                {/* Avatar */}
+                <Avatar
                   sx={{
-                    display: 'block',
-                    mt: 0.5,
-                    opacity: 0.8,
-                    textAlign: 'right',
+                    width: 36,
+                    height: 36,
+                    bgcolor: isOwn ? 'primary.main' : 'grey.400',
+                    fontSize: '0.875rem',
+                    flexShrink: 0,
                   }}
                 >
-                  {formatDate(message.sentAt)}
-                </Typography>
+                  {isOwn ? (user?.fullName?.[0] || 'M') : 'U'}
+                </Avatar>
+
+                {/* Message bubble */}
+                <Box
+                  sx={{
+                    maxWidth: '70%',
+                    minWidth: '120px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 0.5,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2,
+                      bgcolor: isOwn ? 'primary.main' : 'white',
+                      color: isOwn ? 'white' : 'text.primary',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                      border: isOwn ? 'none' : '1px solid',
+                      borderColor: 'grey.200',
+                    }}
+                  >
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        wordBreak: 'break-word',
+                        lineHeight: 1.5,
+                        fontSize: '0.95rem',
+                      }}
+                    >
+                      {message.content}
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      px: 1,
+                      color: 'text.secondary',
+                      fontSize: '0.75rem',
+                      alignSelf: isOwn ? 'flex-end' : 'flex-start',
+                    }}
+                  >
+                    {formatDate(message.sentAt)}
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
-          ))
+            )
+          })
         )}
         <div ref={messagesEndRef} />
       </Paper>
 
       {/* Input */}
-      <Paper component="form" onSubmit={handleSendMessage} sx={{ p: 2, display: 'flex', gap: 1 }}>
+      <Paper 
+        component="form" 
+        onSubmit={handleSendMessage} 
+        sx={{ 
+          p: 2, 
+          display: 'flex', 
+          gap: 1.5,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        }}
+      >
         <TextField
           fullWidth
           multiline
@@ -230,14 +319,24 @@ export default function ChatPage() {
           disabled={sending}
           variant="outlined"
           size="small"
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              bgcolor: 'white',
+            },
+          }}
         />
         <Button
           type="submit"
           variant="contained"
           disabled={!newMessage.trim() || sending}
-          sx={{ minWidth: 'auto', px: 3 }}
+          sx={{ 
+            minWidth: 'auto', 
+            px: 3,
+            minHeight: '40px',
+            borderRadius: 2,
+          }}
         >
-          {sending ? <CircularProgress size={24} /> : <SendIcon />}
+          {sending ? <CircularProgress size={24} color="inherit" /> : <SendIcon />}
         </Button>
       </Paper>
     </Container>
