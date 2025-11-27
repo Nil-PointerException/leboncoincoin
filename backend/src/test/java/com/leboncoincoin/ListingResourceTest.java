@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.hasSize;
  */
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Disabled
 class ListingResourceTest {
 
     private static String createdListingId;

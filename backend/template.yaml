@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: LeBonCoinCoin Backend - Classified Ads Platform
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 2048 # Java + SnapStart aiment la mémoire (tu paies à la durée, et plus de RAM = durée plus courte, donc prix quasi identique)
+    Runtime: java21
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        QUARKUS_PROFILE: prod
+        JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+
+Parameters:
+  DbUrl:
+    Type: String
+    Description: JDBC URL
+  DbUsername:
+    Type: String
+  DbPassword:
+    Type: String
+    NoEcho: true
+  ClerkClientId:
+    Type: String
+  ClerkClientSecret:
+    Type: String
+    NoEcho: true
+  ClerkDomain:
+    Type: String
+  S3BucketName:
+    Type: String
+    Default: leboncoincoin-images
+
+Resources:
+  LeBonCoinCoinFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: leboncoincoin-backend
+      CodeUri: target/function.zip
+      Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
+
+      # Optimisation démarrage rapide (gratuit)
+      AutoPublishAlias: live
+      SnapStart:
+        ApplyOn: PublishedVersions
+
+      # Plus de section VpcConfig ici !
+
+      Environment:
+        Variables:
+          # --- Database ---
+          DB_URL: !Ref DbUrl
+          DB_USERNAME: !Ref DbUsername
+          DB_PASSWORD: !Ref DbPassword
+
+          # --- Variables Spécifiques à ton application.yaml ---
+          # On remplit les trous de ton fichier config
+
+          # correspond à auth-server-url: ${CLERK_AUTH_SERVER_URL:}
+          CLERK_AUTH_SERVER_URL: !Sub "https://${ClerkDomain}.clerk.accounts.dev"
+
+          # correspond à issuer: ${CLERK_ISSUER:}  <-- C'EST LA CLÉ DU SUCCÈS
+          CLERK_ISSUER: !Sub "https://${ClerkDomain}.clerk.accounts.dev"
+
+          # correspond à client-id: ${CLERK_CLIENT_ID:}
+          CLERK_CLIENT_ID: !Ref ClerkClientId
+
+          # correspond à secret: ${CLERK_CLIENT_SECRET:}
+          CLERK_CLIENT_SECRET: !Ref ClerkClientSecret
+
+          # Optionnel si tu utilises l'audience
+          # CLERK_AUDIENCE: ...
+
+          # --- Autres ---
+          S3_BUCKET_NAME: !Ref S3BucketName
+          QUARKUS_PROFILE: prod
+
+          # Sécurité BDD (Pool)
+          QUARKUS_DATASOURCE_JDBC_INITIAL_SIZE: "0"
+          QUARKUS_DATASOURCE_JDBC_MIN_SIZE: "0"
+          QUARKUS_DATASOURCE_JDBC_MAX_SIZE: "2"
+          QUARKUS_FLYWAY_MIGRATE_AT_START: "false"
+
+          # Debug Logs (Gardons-les au cas où)
+          QUARKUS_LOG_CATEGORY__IO_QUARKUS_OIDC__LEVEL: DEBUG
+          QUARKUS_LOG_CATEGORY__IO_SMALLRYE_JWT__LEVEL: DEBUG
+
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref S3BucketName
+        # Plus de VPCAccessPolicy ici !
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"
+
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"

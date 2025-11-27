@@ -288,7 +288,7 @@ mvn clean package
 
 # Deploy with SAM
 sam deploy \
-    --template-file sam-template.yaml \
+    --template-file template.yaml \
     --stack-name leboncoincoin-backend-prod \
     --capabilities CAPABILITY_IAM \
     --parameter-overrides \

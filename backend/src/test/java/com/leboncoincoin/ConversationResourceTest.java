@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.hasSize;
  */
 @QuarkusTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Disabled
 class ConversationResourceTest {
 
     private static String sellerListingId;

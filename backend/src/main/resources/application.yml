@@ -311,6 +311,13 @@ app:
     datasource:
       jdbc:
         url: ${DB_URL}
+        max-size: 5  # Optimized for Lambda (1 instance = 1 connection, pool of 5 is sufficient)
+        min-size: 1
+        # Connection pool settings optimized for Lambda
+        background-validation-interval: PT1M
+        idle-removal-interval: PT5M
+        max-lifetime: PT30M
+        leak-detection-interval: PT10M
       username: ${DB_USERNAME}
       password: ${DB_PASSWORD}
     hibernate-orm:
@@ -318,9 +325,40 @@ app:
         generation: none
       log:
         sql: false
+    # Optimize logging for production
     log:
       level: INFO
       category:
         "com.leboncoincoin":
           level: INFO
+        "org.hibernate":
+          level: WARN
+        "io.quarkus":
+          level: INFO
+      console:
+        enable: true
+        format: "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{2.}] (%t) %s%e%n"
+    # Ensure OIDC is enabled in production
+    oidc:
+      enabled: ${OIDC_ENABLED:true}
+      tls:
+        verification: ${OIDC_TLS_VERIFICATION:required}
+    # CORS for production frontend
+    http:
+      cors:
+        origins: ${CORS_ORIGINS}
+        methods: GET,POST,PUT,DELETE,OPTIONS
+        headers: accept,authorization,content-type,x-requested-with
+        exposed-headers: Content-Disposition
+        access-control-max-age: 86400
+  # Production app configuration
+  app:
+    email:
+      provider: ${EMAIL_PROVIDER:ses}
+      from: ${EMAIL_FROM:noreply@leboncoincoin.com}
+      from-name: ${EMAIL_FROM_NAME:LeBonCoinCoin}
+      welcome-enabled: ${EMAIL_WELCOME_ENABLED:true}
+    s3:
+      bucket-name: ${S3_BUCKET_NAME:leboncoincoin-images}
+      presigned-url-expiration: 300  # 5 minutes for production
 
