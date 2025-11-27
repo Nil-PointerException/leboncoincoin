@@ -110,11 +110,17 @@ export const uploadApi = {
   },
 
   uploadToS3: async (presignedUrl: string, file: File): Promise<void> => {
-    await axios.put(presignedUrl, file, {
+    const response = await fetch(presignedUrl, {
+      method: 'PUT',
       headers: {
         'Content-Type': file.type,
       },
+      body: file,
     })
+
+    if (!response.ok) {
+      throw new Error(`Failed to upload to S3 (status ${response.status})`)
+    }
   },
 }
 
