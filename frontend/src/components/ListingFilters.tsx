@@ -4,7 +4,6 @@ import {
   TextField,
   Button,
   Paper,
-  Grid,
   InputAdornment,
   Autocomplete,
   Typography,
@@ -20,16 +19,19 @@ import {
   Slider,
   Divider,
   Tooltip,
+  CircularProgress,
 } from '@mui/material'
 import SearchIcon from '@mui/icons-material/Search'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
+import MyLocationIcon from '@mui/icons-material/MyLocation'
 import EuroIcon from '@mui/icons-material/Euro'
 import TuneIcon from '@mui/icons-material/Tune'
 import CloseIcon from '@mui/icons-material/Close'
 import { CATEGORIES } from '@/constants/categories'
 import { searchLocations, type LocationSuggestion } from '@/services/locationApi'
+import { getCurrentCity } from '@/services/geolocationApi'
 import type { ListingFilter } from '@/types'
 import CategorySelect from '@/components/CategorySelect'
 import { getCategoryIcon } from '@/constants/categoryIcons'
@@ -44,6 +46,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
   const [locationLoading, setLocationLoading] = useState(false)
   const [locationInputValue, setLocationInputValue] = useState('')
   const [advancedOpen, setAdvancedOpen] = useState(false)
+  const [geolocating, setGeolocating] = useState(false)
 
   const handleSearch = () => {
     onFilter(filters)
@@ -69,6 +72,27 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
       console.error('Error searching locations:', error)
     } finally {
       setLocationLoading(false)
+    }
+  }
+
+  const handleGeolocation = async () => {
+    setGeolocating(true)
+    try {
+      const city = await getCurrentCity()
+      if (city) {
+        const locationLabel = city.label || `${city.city}${city.postcode ? ` (${city.postcode})` : ''}`
+        setLocationInputValue(locationLabel)
+        setFilters({ ...filters, location: locationLabel })
+        // Rechercher aussi les suggestions pour afficher dans l'autocomplete
+        await handleLocationSearch(city.city)
+      } else {
+        console.warn('Impossible de déterminer la ville depuis la géolocalisation')
+      }
+    } catch (error: any) {
+      console.error('Error getting current location:', error)
+      // On pourrait afficher un message d'erreur à l'utilisateur ici
+    } finally {
+      setGeolocating(false)
     }
   }
 
@@ -284,6 +308,35 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                           <LocationOnIcon sx={{ color: 'primary.main', fontSize: 22 }} />
                         </InputAdornment>
                         {params.InputProps.startAdornment}
+                      </>
+                    ),
+                    endAdornment: (
+                      <>
+                        {params.InputProps.endAdornment}
+                        <InputAdornment position="end" sx={{ mr: 1 }}>
+                          <Tooltip title="Utiliser ma position actuelle">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleGeolocation()
+                              }}
+                              disabled={geolocating}
+                              sx={{
+                                color: 'primary.main',
+                                '&:hover': {
+                                  bgcolor: 'primary.lighter',
+                                },
+                              }}
+                            >
+                              {geolocating ? (
+                                <CircularProgress size={20} />
+                              ) : (
+                                <MyLocationIcon fontSize="small" />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
                       </>
                     ),
                     sx: {
