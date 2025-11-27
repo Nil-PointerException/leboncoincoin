@@ -14,6 +14,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
 
@@ -31,12 +32,16 @@ public class UserResource {
     @Inject
     SecurityConfig securityConfig;
 
+    @Inject
+    JsonWebToken jwt;
+
     @GET
     public Response getCurrentUser() {
         Log.info("GET /me");
         
         String userId = securityConfig.getCurrentUserId();
-        String email = securityConfig.getCurrentUserEmail();
+        Object emailObj = jwt.getClaim("email");
+        String email = (emailObj != null) ? emailObj.toString() : null;
         String name = securityConfig.getCurrentUserName();
 
         // Ensure user exists in database (create if first login)
@@ -51,7 +56,8 @@ public class UserResource {
         Log.info("GET /me/listings");
         
         String userId = securityConfig.getCurrentUserId();
-        String email = securityConfig.getCurrentUserEmail();
+        Object emailObj = jwt.getClaim("email");
+        String email = (emailObj != null) ? emailObj.toString() : null;
         String name = securityConfig.getCurrentUserName();
 
         // Auto-provision user on first contact even if no prior DB record exists

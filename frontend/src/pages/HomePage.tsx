@@ -7,12 +7,7 @@ import {
   CircularProgress,
   Alert,
   Stack,
-  Paper,
-  alpha,
 } from '@mui/material'
-import SearchIcon from '@mui/icons-material/Search'
-import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import LocalOfferIcon from '@mui/icons-material/LocalOffer'
 import { listingsApi } from '@/services/api'
 import ListingCard from '@/components/ListingCard'
 import ListingFilters from '@/components/ListingFilters'
@@ -68,13 +63,6 @@ export default function HomePage() {
   const handleFilter = (filters: ListingFilter) => {
     fetchListings(filters)
   }
-
-  // Stats pour le hero section
-  const stats = [
-    { icon: <SearchIcon sx={{ fontSize: 40 }} />, value: listings.length, label: 'Annonces disponibles' },
-    { icon: <TrendingUpIcon sx={{ fontSize: 40 }} />, value: '10k+', label: 'Utilisateurs actifs' },
-    { icon: <LocalOfferIcon sx={{ fontSize: 40 }} />, value: '500+', label: 'Ventes par jour' },
-  ]
 
   return (
     <>
@@ -143,39 +131,6 @@ export default function HomePage() {
             >
               Déposer une annonce
             </PrimaryDuckButton>
-
-            {/* Stats - Plus compact */}
-            <Grid container spacing={2} sx={{ mt: 2, maxWidth: 800 }}>
-              {stats.map((stat, index) => (
-                <Grid item xs={4} key={index}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: { xs: 1.5, md: 2 },
-                      textAlign: 'center',
-                      background: 'rgba(255, 255, 255, 0.95)',
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: 2,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-                      },
-                    }}
-                  >
-                    <Box sx={{ color: 'primary.main', mb: 0.5 }}>
-                      {stat.icon}
-                    </Box>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', fontSize: { xs: '1.25rem', md: '1.75rem' } }}>
-                      {stat.value}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', md: '0.875rem' } }}>
-                      {stat.label}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
           </Stack>
         </Container>
 

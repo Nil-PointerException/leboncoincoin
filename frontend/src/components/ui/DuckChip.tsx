@@ -24,9 +24,10 @@ export const DuckChip = (props: ChipProps) => {
 }
 
 // Variants de catégories avec couleurs
-export const CategoryChip = ({ label, ...props }: ChipProps) => (
+export const CategoryChip = ({ label, icon, ...props }: ChipProps) => (
   <DuckChip
     label={label}
+    icon={icon}
     size="small"
     {...props}
   />

@@ -20,7 +20,6 @@ import {
   TextField,
 } from '@mui/material'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
-import CategoryIcon from '@mui/icons-material/Category'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
@@ -31,12 +30,13 @@ import { listingsApi, setAuthToken, favoritesApi } from '@/services/api'
 import { messagingApi } from '@/services/messagingApi'
 import type { Listing } from '@/types'
 import ImageSlider from '@/components/ImageSlider'
+import { getCategoryIcon } from '@/constants/categoryIcons'
 
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user: clerkUser, isSignedIn } = useUserSafe()
-  const { user: backendUser, isAdmin } = useCurrentUser()
+  const { isAdmin } = useCurrentUser()
   const { getToken } = useAuthSafe()
 
   const [listing, setListing] = useState<Listing | null>(null)
@@ -178,10 +178,19 @@ export default function ListingDetailPage() {
   }
 
   const isOwner = clerkUser?.id === listing.userId
-  const canDelete = isOwner || isAdmin
   const images = listing.imageUrls?.length > 0 
     ? listing.imageUrls 
     : ['https://via.placeholder.com/800x600?text=No+Image']
+
+  // Format price without unnecessary .00
+  const formatPrice = (price: number): string => {
+    if (price % 1 === 0) {
+      return price.toString()
+    }
+    return price.toFixed(2)
+  }
+
+  const CategoryIcon = getCategoryIcon(listing.category)
 
   return (
     <Container maxWidth="lg">
@@ -202,11 +211,11 @@ export default function ListingDetailPage() {
               </Typography>
 
               <Typography variant="h3" color="primary" gutterBottom fontWeight={700}>
-                {listing.price ? listing.price.toFixed(2) : '0.00'} €
+                {listing.price ? formatPrice(listing.price) : '0'} €
               </Typography>
 
               <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-                <Chip icon={<CategoryIcon />} label={listing.category} color="primary" />
+                <Chip icon={<CategoryIcon fontSize="small" />} label={listing.category} color="primary" />
                 <Chip icon={<LocationOnIcon />} label={listing.location} variant="outlined" />
               </Box>
 

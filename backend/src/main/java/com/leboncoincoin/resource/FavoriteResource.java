@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,9 @@ public class FavoriteResource {
 
     @Inject
     SecurityConfig securityConfig;
+
+    @Inject
+    JsonWebToken jwt;
 
     /**
      * Get all favorites for the current user
@@ -82,7 +86,8 @@ public class FavoriteResource {
     @Transactional
     public Response addFavorite(@PathParam("listingId") String listingId) {
         String userId = securityConfig.getCurrentUserId();
-        String email = securityConfig.getCurrentUserEmail();
+        Object emailObj = jwt.getClaim("email");
+        String email = (emailObj != null) ? emailObj.toString() : null;
         String name = securityConfig.getCurrentUserName();
 
         Log.infof("POST /favorites/%s for user %s", listingId, userId);

@@ -16,7 +16,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import type { Listing } from '@/types'
 import { favoritesApi } from '@/services/api'
 import { useAuthSafe } from '@/hooks/useAuthSafe'
-import { DuckCard, CategoryChip, PriceChip } from './ui'
+import { DuckCard, CategoryChip } from './ui'
+import { getCategoryIcon } from '@/constants/categoryIcons'
 
 interface ListingCardProps {
   listing: Listing
@@ -77,6 +78,14 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
 
   const imageUrl = listing.imageUrls?.[0] || 'https://via.placeholder.com/400x300?text=🦆+Pas+d\'image'
 
+  // Format price without unnecessary .00
+  const formatPrice = (price: number): string => {
+    if (price % 1 === 0) {
+      return price.toString()
+    }
+    return price.toFixed(2)
+  }
+
   // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -90,6 +99,8 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
     if (diffInDays < 7) return `Il y a ${diffInDays}j`
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
   }
+
+  const CategoryIcon = getCategoryIcon(listing.category)
 
   return (
     <DuckCard
@@ -187,6 +198,7 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
         >
           <CategoryChip
             label={listing.category}
+            icon={<CategoryIcon fontSize="small" />}
             size="small"
             sx={{
               backgroundColor: 'rgba(255, 255, 255, 0.98)',
@@ -214,7 +226,7 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
               letterSpacing: '-0.02em',
             }}
           >
-            {listing.price.toFixed(2)} €
+            {formatPrice(listing.price)} €
           </Typography>
         </Box>
 

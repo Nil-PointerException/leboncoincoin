@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,6 +35,9 @@ public class ListingResource {
 
     @Inject
     SecurityConfig securityConfig;
+
+    @Inject
+    JsonWebToken jwt;
 
     @GET
     @PermitAll
@@ -68,14 +72,25 @@ public class ListingResource {
 
     @POST
     @Authenticated
-    public Response createListing(@Valid CreateListingRequest request) {
-        Log.info("POST /listings");
-        
-        String userId = securityConfig.getCurrentUserId();
-        String email = securityConfig.getCurrentUserEmail();
-        String name = securityConfig.getCurrentUserName();
+    public Response create(@Valid CreateListingRequest request) {
 
-        // Ensure user exists in database
+        Object emailObj = jwt.getClaim("email");
+        String email = (emailObj != null) ? emailObj.toString() : null;
+        String userId = jwt.getSubject();
+
+        // Vérification
+        if (email == null) {
+            Log.error("ERREUR CRITIQUE: L'email est null malgré le token valide !");
+            return Response.status(403)
+                    .entity(new Error("Email claim not found in token. Available claims: " + jwt.getClaimNames()))
+                    .build();
+        }
+
+        // 5. On s'assure que l'utilisateur existe (Lazy Creation)
+        // On récupère le nom s'il existe, sinon "Utilisateur"
+        Object nameObj = jwt.getClaim("name");
+        String name = (nameObj != null) ? nameObj.toString() : "Utilisateur";
+
         userService.ensureUserExists(userId, email, name);
 
         Listing listing = listingService.createListing(request, userId);
