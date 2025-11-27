@@ -26,6 +26,8 @@ import { searchLocations, type LocationSuggestion } from '@/services/locationApi
 import type { CreateListingRequest } from '@/types'
 import CategorySelect from '@/components/CategorySelect'
 
+type FieldErrors = Partial<Record<'title' | 'description' | 'location', string>>
+
 export default function CreateListingPage() {
   const navigate = useNavigate()
   const { getToken } = useAuthSafe()
@@ -36,6 +38,7 @@ export default function CreateListingPage() {
   const [uploading, setUploading] = useState(false)
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([])
   const [locationLoading, setLocationLoading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
 
   const [formData, setFormData] = useState<CreateListingRequest>({
     title: '',
@@ -46,8 +49,21 @@ export default function CreateListingPage() {
     imageUrls: [],
   })
 
+  const clearFieldError = (field: keyof FieldErrors) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) {
+        return prev
+      }
+      const { [field]: _removed, ...rest } = prev
+      return rest
+    })
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
+    if (name === 'title' || name === 'description' || name === 'location') {
+      clearFieldError(name as keyof FieldErrors)
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: name === 'price' ? parseFloat(value) || 0 : value,
@@ -111,10 +127,36 @@ export default function CreateListingPage() {
     }
   }
 
+  const validateForm = () => {
+    const errors: FieldErrors = {}
+    const titleLength = formData.title.trim().length
+    const descriptionLength = formData.description.trim().length
+    const locationLength = formData.location.trim().length
+
+    if (titleLength < 3 || titleLength > 100) {
+      errors.title = 'Title must be between 3 and 100 characters'
+    }
+    if (descriptionLength < 10 || descriptionLength > 5000) {
+      errors.description = 'Description must be between 10 and 5000 characters'
+    }
+    if (locationLength < 2 || locationLength > 100) {
+      errors.location = 'Location must be between 2 and 100 characters'
+    }
+
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
+
+    if (!validateForm()) {
+      setError('Merci de corriger les erreurs indiquées.')
+      return
+    }
+
+    setLoading(true)
 
     try {
       // Get token for authentication
@@ -127,10 +169,16 @@ export default function CreateListingPage() {
       }
 
       const listing = await listingsApi.create(request)
+      if (!listing?.id) {
+        throw new Error("Réponse invalide du serveur : identifiant manquant")
+      }
+
       navigate(`/listings/${listing.id}`)
     } catch (err) {
       console.error('Error creating listing:', err)
-      setError("Erreur lors de la création de l'annonce")
+      const message =
+        err instanceof Error ? err.message : "Erreur lors de la création de l'annonce"
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -158,7 +206,12 @@ export default function CreateListingPage() {
             value={formData.title}
             onChange={handleChange}
             inputProps={{ maxLength: 100 }}
-            helperText={`${formData.title.length}/100 caractères`}
+            error={Boolean(fieldErrors.title)}
+            helperText={
+              fieldErrors.title
+                ? fieldErrors.title
+                : `${formData.title.length}/100 caractères (minimum 3)`
+            }
             sx={{ mb: 2 }}
           />
 
@@ -172,7 +225,12 @@ export default function CreateListingPage() {
             value={formData.description}
             onChange={handleChange}
             inputProps={{ maxLength: 5000 }}
-            helperText={`${formData.description.length}/5000 caractères. Minimum 10 caractères.`}
+            error={Boolean(fieldErrors.description)}
+            helperText={
+              fieldErrors.description
+                ? fieldErrors.description
+                : `${formData.description.length}/5000 caractères. Minimum 10 caractères.`
+            }
             sx={{ mb: 2 }}
           />
 
@@ -218,6 +276,7 @@ export default function CreateListingPage() {
             inputValue={formData.location}
             onInputChange={(_, newValue) => {
               setFormData((prev) => ({ ...prev, location: newValue }))
+              clearFieldError('location')
               handleLocationSearch(newValue)
             }}
             onChange={(_, newValue) => {
@@ -227,6 +286,7 @@ export default function CreateListingPage() {
                   ? `${newValue.city} (${newValue.postcode})` 
                   : ''
               setFormData((prev) => ({ ...prev, location }))
+              clearFieldError('location')
             }}
             loading={locationLoading}
             loadingText="Recherche..."
@@ -237,7 +297,8 @@ export default function CreateListingPage() {
                 required
                 label="Localisation"
                 placeholder="Commencez à taper une ville..."
-                helperText="Ex: Paris, Lyon, Marseille..."
+                error={Boolean(fieldErrors.location)}
+                helperText={fieldErrors.location ?? 'Ex: Paris, Lyon, Marseille...'}
                 InputProps={{
                   ...params.InputProps,
                   startAdornment: (

@@ -99,7 +99,7 @@ quarkus:
 # Application-specific configuration
 app:
   s3:
-    bucket-name: ${S3_BUCKET_NAME:leboncoincoin-images}
+    bucket-name: ${S3_BUCKET_NAME}
     presigned-url-expiration: 300
   email:
     provider: ${EMAIL_PROVIDER:smtp}
@@ -146,7 +146,7 @@ app:
         origins: http://localhost:5173,http://localhost:3000
   app:
     s3:
-      bucket-name: leboncoincoin-images
+      bucket-name: leboncoincoin-bucket
       presigned-url-expiration: 3600
     email:
       provider: smtp
@@ -197,7 +197,7 @@ app:
         origins: http://localhost:5173,http://localhost:3000
   app:
     s3:
-      bucket-name: leboncoincoin-images
+      bucket-name: leboncoincoin-bucket
       presigned-url-expiration: 3600
     email:
       provider: smtp
@@ -248,7 +248,7 @@ app:
           level: DEBUG
   app:
     s3:
-      bucket-name: leboncoincoin-images
+      bucket-name: leboncoincoin-bucket
       presigned-url-expiration: 300
     email:
       provider: smtp
@@ -329,5 +329,5 @@ app:
       from-name: ${EMAIL_FROM_NAME:LeBonCoinCoin}
       welcome-enabled: ${EMAIL_WELCOME_ENABLED:true}
     s3:
-      bucket-name: ${S3_BUCKET_NAME:leboncoincoin-images}
+      bucket-name: ${S3_BUCKET_NAME}
       presigned-url-expiration: 300

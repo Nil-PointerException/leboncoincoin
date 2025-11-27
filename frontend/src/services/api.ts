@@ -69,13 +69,39 @@ export const listingsApi = {
   },
 
   create: async (request: CreateListingRequest): Promise<Listing> => {
-    const { data } = await api.post('/listings', request)
-    return data
+    const response = await api.post('/listings', request)
+    if (response.status >= 400) {
+      const message =
+        (response.data as { message?: string })?.message ?? "Impossible de créer l'annonce"
+      throw new Error(message)
+    }
+
+    const listing = response.data as Listing | undefined
+    if (!listing?.id) {
+      throw new Error("Réponse invalide du serveur (identifiant manquant)")
+    }
+
+    return listing
   },
 
   update: async (id: string, request: CreateListingRequest): Promise<Listing> => {
-    const { data } = await api.put(`/listings/${id}`, request)
-    return data
+    if (!id) {
+      throw new Error("Listing ID is required to update the listing")
+    }
+
+    const response = await api.put(`/listings/${id}`, request)
+    if (response.status >= 400) {
+      const message =
+        (response.data as { message?: string })?.message ?? "Impossible de modifier l'annonce"
+      throw new Error(message)
+    }
+
+    const listing = response.data as Listing | undefined
+    if (!listing?.id) {
+      throw new Error("Réponse invalide du serveur (identifiant manquant)")
+    }
+
+    return listing
   },
 
   delete: async (id: string, feedback: {

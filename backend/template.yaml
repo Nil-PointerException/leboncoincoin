@@ -49,7 +49,7 @@ Parameters:
     Type: String
   S3BucketName:
     Type: String
-    Default: leboncoincoin-images
+    Default: leboncoincoin-bucket
 
   CorsOrigins:
     Type: String

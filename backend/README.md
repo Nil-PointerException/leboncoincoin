@@ -110,7 +110,7 @@ export DB_LOG_SQL=true
 
 # AWS Configuration
 export AWS_REGION=eu-west-3
-export S3_BUCKET_NAME=leboncoincoin-images
+export S3_BUCKET_NAME=leboncoincoin-bucket
 
 # Email Configuration
 export EMAIL_PROVIDER=ses
@@ -129,8 +129,8 @@ export CORS_ORIGINS=http://localhost:5173
 ### 3. Create S3 Bucket
 
 ```bash
-aws s3 mb s3://leboncoincoin-images --region eu-west-3
-aws s3api put-bucket-cors --bucket leboncoincoin-images --cors-configuration file://cors.json
+aws s3 mb s3://leboncoincoin-bucket --region eu-west-3
+aws s3api put-bucket-cors --bucket leboncoincoin-bucket --cors-configuration file://cors.json
 ```
 
 ### 4. Run in Development Mode
