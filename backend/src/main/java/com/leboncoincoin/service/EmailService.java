@@ -80,9 +80,16 @@ public class EmailService {
     }
 
     /**
+     * Get the configured email provider
+     */
+    public String getEmailProvider() {
+        return emailProvider.orElse("smtp");
+    }
+
+    /**
      * Send email via SMTP (MailHog in dev mode)
      */
-    private void sendWithSMTP(String to, String subject, String htmlContent) {
+    public void sendWithSMTP(String to, String subject, String htmlContent) {
         Log.debugf("Sending email via SMTP to %s", to);
 
         if (mailer.isUnsatisfied()) {
@@ -103,7 +110,7 @@ public class EmailService {
     /**
      * Send email via AWS SES (production)
      */
-    private void sendWithSES(String to, String subject, String htmlContent) {
+    public void sendWithSES(String to, String subject, String htmlContent) {
         Log.debugf("Sending email via AWS SES to %s", to);
 
         if (sesClient.isUnsatisfied()) {
@@ -234,7 +241,86 @@ public class EmailService {
                 """, appName, userName, appName, appName);
         }
 
+        if ("contact".equals(templateName)) {
+            // For contact emails, the HTML is already generated in ContactResource
+            // This is just a fallback
+            String reason = (String) data.getOrDefault("reason", "Contact");
+            String message = (String) data.getOrDefault("message", "");
+            String userName = (String) data.getOrDefault("userName", "Utilisateur");
+            String userEmail = (String) data.getOrDefault("userEmail", "Non connecté");
+            String userId = (String) data.getOrDefault("userId", "Anonyme");
+
+            return String.format("""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #FFD700 0%%, #FF9500 100%%);
+                            color: white;
+                            padding: 30px;
+                            text-align: center;
+                            border-radius: 10px 10px 0 0;
+                        }
+                        .content {
+                            background: #f9f9f9;
+                            padding: 30px;
+                            border-radius: 0 0 10px 10px;
+                        }
+                        .info-box {
+                            background: white;
+                            padding: 15px;
+                            border-left: 4px solid #FFD700;
+                            margin: 15px 0;
+                        }
+                        .message-box {
+                            background: white;
+                            padding: 20px;
+                            border-radius: 5px;
+                            margin: 20px 0;
+                            white-space: pre-wrap;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>🦆 Nouveau message de contact</h1>
+                    </div>
+                    <div class="content">
+                        <div class="info-box">
+                            <strong>Raison :</strong> %s<br>
+                            <strong>Utilisateur :</strong> %s<br>
+                            <strong>Email :</strong> %s<br>
+                            <strong>ID Utilisateur :</strong> %s
+                        </div>
+                        <h3>Message :</h3>
+                        <div class="message-box">%s</div>
+                    </div>
+                </body>
+                </html>
+                """, reason, userName, userEmail, userId, escapeHtml(message));
+        }
+
         return "<html><body><h1>Email Template</h1></body></html>";
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) return "";
+        return text
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#39;");
     }
 }
 

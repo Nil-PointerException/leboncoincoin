@@ -1,6 +1,6 @@
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { SignIn, SignUp } from '@clerk/clerk-react'
-import { Box, Typography, Paper } from '@mui/material'
+import { Box } from '@mui/material'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ListingDetailPage from './pages/ListingDetailPage'
@@ -10,30 +10,13 @@ import ProfilePage from './pages/ProfilePage'
 import ConversationsPage from './pages/ConversationsPage'
 import ChatPage from './pages/ChatPage'
 import FavoritesPage from './pages/FavoritesPage'
+import ContactPage from './pages/ContactPage'
+import LegalPage from './pages/LegalPage'
+import PrivacyPage from './pages/PrivacyPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
               import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.trim() === ''
-
-// Dev mode placeholder for auth pages
-const DevAuthPlaceholder = ({ type }: { type: 'sign-in' | 'sign-up' }) => (
-  <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" bgcolor="grey.100">
-    <Paper sx={{ p: 4, maxWidth: 400 }}>
-      <Typography variant="h5" gutterBottom>
-        Mode Développement
-      </Typography>
-      <Typography variant="body1" color="text.secondary" paragraph>
-        {type === 'sign-in' ? 'Connexion' : 'Inscription'} désactivée en mode dev.
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        Le backend accepte toutes les requêtes avec l'utilisateur de test <code>dev-user-123</code>.
-      </Typography>
-      <Typography variant="body2" color="info.main" sx={{ mt: 2 }}>
-        Pour utiliser Clerk, configurez <code>VITE_CLERK_PUBLISHABLE_KEY</code> dans le fichier <code>.env</code>
-      </Typography>
-    </Paper>
-  </Box>
-)
 
 function App() {
   return (
@@ -41,6 +24,9 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="/listings/:id" element={<ListingDetailPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/legal" element={<LegalPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         
         {/* Protected Routes */}
         <Route

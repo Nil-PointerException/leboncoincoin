@@ -105,6 +105,7 @@ app:
     provider: ${EMAIL_PROVIDER:smtp}
     from: ${EMAIL_FROM:noreply@leboncoincoin.com}
     from-name: ${EMAIL_FROM_NAME:LeBonCoinCoin}
+    contact-recipient: ${EMAIL_CONTACT_RECIPIENT:}
     welcome-enabled: ${EMAIL_WELCOME_ENABLED:true}
   messaging:
     allow-self-messaging: ${ALLOW_SELF_MESSAGING:false}

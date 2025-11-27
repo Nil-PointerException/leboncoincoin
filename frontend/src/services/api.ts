@@ -44,6 +44,9 @@ api.interceptors.response.use(
       console.error('   💡 Authentification requise. Vérifiez votre configuration Clerk.')
     } else if (!error.response) {
       console.error('   💡 Backend non accessible. Vérifiez que le backend est démarré.')
+      console.error('   📝 Pour démarrer le backend, exécutez dans le dossier backend:')
+      console.error('      mvn quarkus:dev')
+      console.error('   🌐 Le backend doit être accessible sur http://localhost:8080')
     }
     
     return Promise.reject(error)
@@ -174,6 +177,23 @@ export const favoritesApi = {
   getFavoriteStatus: async (listingId: string): Promise<import('@/types').FavoriteStatus> => {
     const { data } = await api.get(`/favorites/${listingId}/status`)
     return data
+  },
+}
+
+// Contact API
+export const contactApi = {
+  sendContactMessage: async (request: {
+    reason: 'QUESTION' | 'BUG_REPORT' | 'FEATURE_REQUEST' | 'ACCOUNT_ISSUE' | 'OTHER'
+    message: string
+  }): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post('/contact', request)
+    if (response.status >= 400) {
+      const message =
+        (response.data as { message?: string })?.message || 
+        'Erreur lors de l\'envoi du message. Veuillez réessayer.'
+      throw new Error(message)
+    }
+    return response.data
   },
 }
 
