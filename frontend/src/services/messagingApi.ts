@@ -52,6 +52,14 @@ export const messagingApi = {
   },
 
   /**
+   * Backwards-compatible alias exposed to hooks/components
+   * that expect getUserConversations on messagingApi.
+   */
+  async getUserConversations(): Promise<ConversationWithListing[]> {
+    return this.getConversations()
+  },
+
+  /**
    * Get a specific conversation by ID
    */
   async getConversation(conversationId: string): Promise<ConversationWithListing> {

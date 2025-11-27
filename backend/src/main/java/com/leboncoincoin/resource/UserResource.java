@@ -51,6 +51,12 @@ public class UserResource {
         Log.info("GET /me/listings");
         
         String userId = securityConfig.getCurrentUserId();
+        String email = securityConfig.getCurrentUserEmail();
+        String name = securityConfig.getCurrentUserName();
+
+        // Auto-provision user on first contact even if no prior DB record exists
+        userService.ensureUserExists(userId, email, name);
+
         List<ListingResponse> listings = listingService.getListingsByUserId(userId)
                 .stream()
                 .map(ListingResponse::from)
