@@ -74,11 +74,38 @@ public class ListingResource {
     @Authenticated
     public Response create(@Valid CreateListingRequest request) {
 
-        Object emailObj = jwt.getClaim("email");
-        String email = (emailObj != null) ? emailObj.toString() : null;
-        String userId = jwt.getSubject();
+        String email = null;
+        String userId = null;
+        String name = null;
 
-        // Vérification
+        if (securityConfig.isAuthenticated()) {
+            try {
+                userId = securityConfig.getCurrentUserId();
+            } catch (SecurityException ignored) {
+                // fallback to JWT subject below
+            }
+            try {
+                email = securityConfig.getCurrentUserEmail();
+            } catch (SecurityException ignored) {
+                // fallback to JWT claim below
+            }
+            name = securityConfig.getCurrentUserName();
+        }
+
+        if (jwt != null) {
+            if (userId == null) {
+                userId = jwt.getSubject();
+            }
+            if (email == null) {
+                Object emailObj = jwt.getClaim("email");
+                email = emailObj != null ? emailObj.toString() : null;
+            }
+            if (name == null || name.equals("Unknown User")) {
+                Object nameObj = jwt.getClaim("name");
+                name = nameObj != null ? nameObj.toString() : null;
+            }
+        }
+
         if (email == null) {
             Log.error("ERREUR CRITIQUE: L'email est null malgré le token valide !");
             return Response.status(403)
@@ -86,10 +113,9 @@ public class ListingResource {
                     .build();
         }
 
-        // 5. On s'assure que l'utilisateur existe (Lazy Creation)
-        // On récupère le nom s'il existe, sinon "Utilisateur"
-        Object nameObj = jwt.getClaim("name");
-        String name = (nameObj != null) ? nameObj.toString() : "Utilisateur";
+        if (name == null) {
+            name = "Utilisateur";
+        }
 
         userService.ensureUserExists(userId, email, name);
 

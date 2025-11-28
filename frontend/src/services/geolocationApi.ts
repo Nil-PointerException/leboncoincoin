@@ -64,6 +64,7 @@ export async function getCityFromCoordinates(
   longitude: number
 ): Promise<CityFromCoordinates | null> {
   try {
+    console.log('🗺️ Conversion coordonnées en ville:', { latitude, longitude })
     const url = new URL('https://api-adresse.data.gouv.fr/reverse/')
     url.searchParams.append('lat', latitude.toString())
     url.searchParams.append('lon', longitude.toString())
@@ -71,26 +72,38 @@ export async function getCityFromCoordinates(
     const response = await fetch(url.toString())
 
     if (!response.ok) {
-      console.error('API Reverse Geocoding error:', response.status)
+      console.error('❌ API Reverse Geocoding error:', response.status, response.statusText)
       return null
     }
 
     const data = await response.json()
+    console.log('🗺️ Réponse API reverse geocoding:', data)
 
     if (data.features && data.features.length > 0) {
       const feature = data.features[0]
       const properties = feature.properties
+      console.log('🗺️ Propriétés de la ville:', properties)
+
+      const cityName = properties.city || properties.name || properties.municipality || ''
+      const postcode = properties.postcode || undefined
+      const label = properties.label || `${cityName}${postcode ? ` (${postcode})` : ''}`
+
+      if (!cityName) {
+        console.warn('⚠️ Aucun nom de ville trouvé dans les propriétés:', properties)
+        return null
+      }
 
       return {
-        city: properties.city || properties.name || '',
-        postcode: properties.postcode || undefined,
-        label: properties.label || `${properties.city}${properties.postcode ? ` (${properties.postcode})` : ''}`,
+        city: cityName,
+        postcode: postcode,
+        label: label,
       }
     }
 
+    console.warn('⚠️ Aucune feature trouvée dans la réponse API')
     return null
   } catch (error) {
-    console.error('Error fetching city from coordinates:', error)
+    console.error('❌ Error fetching city from coordinates:', error)
     return null
   }
 }

@@ -116,7 +116,10 @@ app:
 "%dev":
   quarkus:
     oidc:
-      enabled: false
+      enabled: true
+      tenant-enabled: false
+      auth-server-url: http://localhost:8080/mock
+      client-id: dev-client
     security:
       auth:
         enabled-in-dev-mode: true

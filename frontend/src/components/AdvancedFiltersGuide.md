@@ -135,17 +135,9 @@ Le bouton "Réinitialiser" est maintenant un **IconButton** compact avec juste l
 ### 3. Fonctionnalités à venir
 
 Section informative avec des switches désactivés pour montrer les futures fonctionnalités :
-- ✅ Annonces avec images uniquement
 - ✅ Trier par pertinence
 - ✅ Afficher annonces urgentes en premier
 
-**Code:**
-```tsx
-<FormControlLabel
-  control={<Switch disabled />}
-  label="Annonces avec images uniquement"
-/>
-```
 
 ## 🎯 Comportements
 
@@ -380,21 +372,6 @@ Ajouter un select pour le tri:
 </TextField>
 ```
 
-### Images uniquement
-
-```typescript
-const [imagesOnly, setImagesOnly] = useState(false)
-
-<FormControlLabel
-  control={
-    <Switch 
-      checked={imagesOnly}
-      onChange={(e) => setImagesOnly(e.target.checked)}
-    />
-  }
-  label="Annonces avec images uniquement"
-/>
-```
 
 Backend:
 ```java

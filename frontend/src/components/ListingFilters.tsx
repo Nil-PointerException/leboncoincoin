@@ -45,6 +45,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([])
   const [locationLoading, setLocationLoading] = useState(false)
   const [locationInputValue, setLocationInputValue] = useState('')
+  const [locationValue, setLocationValue] = useState<LocationSuggestion | string | null>(null)
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const [geolocating, setGeolocating] = useState(false)
 
@@ -55,6 +56,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
   const handleReset = () => {
     setFilters({})
     setLocationInputValue('')
+    setLocationValue(null)
     onFilter({})
   }
 
@@ -78,19 +80,43 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
   const handleGeolocation = async () => {
     setGeolocating(true)
     try {
+      console.log('📍 Début de la géolocalisation...')
       const city = await getCurrentCity()
-      if (city) {
+      console.log('📍 Ville obtenue:', city)
+      
+      if (city && city.city) {
         const locationLabel = city.label || `${city.city}${city.postcode ? ` (${city.postcode})` : ''}`
+        console.log('📍 Label de localisation:', locationLabel)
+        
+        // Créer un objet LocationSuggestion pour l'Autocomplete
+        const locationSuggestion: LocationSuggestion = {
+          label: locationLabel,
+          city: city.city,
+          postcode: city.postcode || '',
+          context: city.postcode || city.city,
+        }
+        
         setLocationInputValue(locationLabel)
-        setFilters({ ...filters, location: locationLabel })
+        setLocationValue(locationSuggestion)
+        const newFilters = { ...filters, location: locationLabel }
+        setFilters(newFilters)
+        
         // Rechercher aussi les suggestions pour afficher dans l'autocomplete
-        await handleLocationSearch(city.city)
+        if (city.city) {
+          await handleLocationSearch(city.city)
+        }
+        
+        // Appliquer le filtre automatiquement
+        onFilter(newFilters)
+        
+        console.log('✅ Géolocalisation réussie, ville:', locationLabel)
       } else {
-        console.warn('Impossible de déterminer la ville depuis la géolocalisation')
+        console.warn('⚠️ Impossible de déterminer la ville depuis la géolocalisation', city)
+        alert('Impossible de déterminer votre ville. Veuillez la saisir manuellement.')
       }
     } catch (error: any) {
-      console.error('Error getting current location:', error)
-      // On pourrait afficher un message d'erreur à l'utilisateur ici
+      console.error('❌ Erreur lors de la géolocalisation:', error)
+      alert(`Erreur de géolocalisation: ${error.message || 'Erreur inconnue'}`)
     } finally {
       setGeolocating(false)
     }
@@ -98,45 +124,39 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
 
   return (
     <Box sx={{ mb: 4 }}>
-      {/* Conteneur principal avec shadow et border */}
-      <Paper 
+      <Paper
         elevation={0}
-        sx={{ 
-          borderRadius: '50px',
-          overflow: 'hidden',
-          background: 'white',
-          border: '5px solid',
-          borderColor: 'primary.main',
-          boxShadow: '0 10px 40px rgba(255, 215, 0, 0.15)',
-          transition: 'all 0.3s ease',
-          '&:hover': {
-            boxShadow: '0 15px 50px rgba(255, 215, 0, 0.25)',
-            transform: 'translateY(-2px)',
-          },
+        sx={{
+          borderRadius: 50,
+          border: '1px solid #E5E7EB',
+          backgroundColor: '#FFFFFF',
+          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)',
+          px: { xs: 2, md: 3 },
+          py: { xs: 2, md: 1 },
         }}
       >
-        {/* Barre de recherche principale */}
-        <Box 
-          sx={{ 
+        <Box
+          sx={{
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: 'stretch',
-            minHeight: { md: '60px' },
+            gap: { xs: 1.5, md: 0 },
+            minHeight: { md: 64 },
           }}
         >
           {/* Recherche textuelle */}
-          <Box 
-            sx={{ 
+          <Box
+            sx={{
               flex: { md: '1 1 40%' },
               position: 'relative',
               '&::after': {
                 content: '""',
                 position: 'absolute',
                 right: 0,
-                top: '15%',
-                bottom: '15%',
-                width: '2px',
-                background: 'linear-gradient(180deg, transparent, rgba(0,0,0,0.1), transparent)',
+                top: '20%',
+                bottom: '20%',
+                width: '1px',
+                backgroundColor: '#E5E7EB',
                 display: { xs: 'none', md: 'block' },
               },
             }}
@@ -154,24 +174,23 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                   <InputAdornment position="start" sx={{ ml: 2 }}>
                     <Box
                       sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '50%',
+                        width: 36,
+                        height: 36,
+                        borderRadius: '999px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: 'linear-gradient(135deg, #FFD700 0%, #FFC107 100%)',
-                        boxShadow: '0 3px 10px rgba(255, 215, 0, 0.3)',
+                        backgroundColor: '#F5F5F7',
                       }}
                     >
-                      <SearchIcon sx={{ color: '#212121', fontSize: 24 }} />
+                      <SearchIcon sx={{ color: '#6B7280', fontSize: 22 }} />
                     </Box>
                   </InputAdornment>
                 ),
                 sx: {
                   px: 2,
-                  py: { xs: 2, md: 0 },
-                  height: { md: '60px' },
+                  py: { xs: 1.5, md: 0 },
+                  height: { md: 64 },
                   fontSize: { xs: '0.95rem', md: '1rem' },
                   fontWeight: 500,
                   color: 'text.primary',
@@ -185,18 +204,18 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
           </Box>
 
           {/* Catégorie */}
-          <Box 
-            sx={{ 
+          <Box
+            sx={{
               flex: { md: '0 1 24%' },
               position: 'relative',
               '&::after': {
                 content: '""',
                 position: 'absolute',
                 right: 0,
-                top: '15%',
-                bottom: '15%',
-                width: '2px',
-                background: 'linear-gradient(180deg, transparent, rgba(0,0,0,0.1), transparent)',
+                top: '20%',
+                bottom: '20%',
+                width: '1px',
+                backgroundColor: '#E5E7EB',
                 display: { xs: 'none', md: 'block' },
               },
             }}
@@ -232,8 +251,8 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
               sx={{
                 '& .MuiInput-root': {
                   px: 2,
-                  py: { xs: 2, md: 0 },
-                  height: { md: '60px' },
+                  py: { xs: 1.5, md: 0 },
+                  height: { md: 64 },
                   display: 'flex',
                   alignItems: 'center',
                 },
@@ -242,8 +261,8 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
           </Box>
 
           {/* Localisation */}
-          <Box 
-            sx={{ 
+          <Box
+            sx={{
               flex: { md: '0 1 24%' },
               position: 'relative',
             }}
@@ -252,6 +271,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
               fullWidth
               freeSolo
               options={locationSuggestions}
+              value={locationValue}
               getOptionLabel={(option) => 
                 typeof option === 'string' ? option : `${option.city} (${option.postcode})`
               }
@@ -265,7 +285,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                     gap: 1.5,
                     py: 1.5,
                     '&:hover': {
-                      bgcolor: 'primary.lighter',
+                    bgcolor: 'rgba(17, 24, 39, 0.05)',
                     },
                   }}
                 >
@@ -289,6 +309,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                   : newValue 
                     ? `${newValue.city} (${newValue.postcode})` 
                     : ''
+                setLocationValue(newValue)
                 setFilters({ ...filters, location: location || undefined })
               }}
               loading={locationLoading}
@@ -298,14 +319,14 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                 <TextField
                   {...params}
                   variant="standard"
-                  placeholder="Ville ou code postal"
+                  placeholder="Localisation"
                   InputProps={{
                     ...params.InputProps,
                     disableUnderline: true,
                     startAdornment: (
                       <>
                         <InputAdornment position="start" sx={{ ml: 2 }}>
-                          <LocationOnIcon sx={{ color: 'primary.main', fontSize: 22 }} />
+                          <LocationOnIcon sx={{ color: 'text.secondary', fontSize: 22 }} />
                         </InputAdornment>
                         {params.InputProps.startAdornment}
                       </>
@@ -323,9 +344,9 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                               }}
                               disabled={geolocating}
                               sx={{
-                                color: 'primary.main',
+                                color: 'text.secondary',
                                 '&:hover': {
-                                  bgcolor: 'primary.lighter',
+                                  bgcolor: 'rgba(17,24,39,0.05)',
                                 },
                               }}
                             >
@@ -341,8 +362,8 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                     ),
                     sx: {
                       px: 2,
-                      py: { xs: 2, md: 0 },
-                      height: { md: '60px' },
+                      py: { xs: 1.5, md: 0 },
+                      height: { md: 64 },
                       fontSize: { xs: '0.95rem', md: '1rem' },
                       fontWeight: 500,
                     }
@@ -353,13 +374,12 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
           </Box>
 
           {/* Boutons d'action */}
-          <Box 
-            sx={{ 
-              display: 'flex',
-              gap: 0,
-              alignItems: 'stretch',
-              flex: { md: '0 0 auto' },
-            }}
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={{ xs: 1.25, md: 1.5 }}
+            alignItems="stretch"
+            justifyContent="flex-end"
+            sx={{ flex: { md: '0 0 auto' }, width: { xs: '100%', md: 'auto' } }}
           >
             {/* Bouton Rechercher */}
             <Button
@@ -367,39 +387,19 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
               onClick={handleSearch}
               startIcon={<SearchIcon sx={{ fontSize: 22 }} />}
               sx={{
-                minWidth: { xs: '100%', md: 150 },
-                px: { xs: 3, md: 3 },
-                py: { xs: 2, md: 0 },
-                height: { md: '60px' },
-                fontWeight: 800,
-                fontSize: { xs: '0.95rem', md: '1rem' },
-                borderRadius: 0,
-                background: 'linear-gradient(135deg, #FFD700 0%, #FFC107 100%)',
-                color: '#212121',
-                textTransform: 'uppercase',
-                letterSpacing: 1,
+                minWidth: { xs: '100%', md: 170 },
+                px: { xs: 3.5, md: 4 },
+                py: { xs: 1.3, md: 0 },
+                height: { md: 60 },
+                fontSize: { xs: '1rem', md: '1rem' },
+                borderRadius: 999,
                 boxShadow: 'none',
-                position: 'relative',
-                overflow: 'hidden',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: '-100%',
-                  width: '100%',
-                  height: '100%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
-                  transition: 'left 0.5s',
-                },
+                backgroundColor: 'primary.main',
+                color: 'primary.contrastText',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #FFC107 0%, #FFD700 100%)',
-                  transform: 'scale(1.02)',
-                  boxShadow: '0 6px 16px rgba(255, 215, 0, 0.35)',
-                  '&::before': {
-                    left: '100%',
-                  },
+                  backgroundColor: 'primary.dark',
+                  transform: 'translateY(-1px)',
                 },
-                transition: 'all 0.3s ease',
               }}
             >
               Trouver
@@ -411,18 +411,18 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                 variant="contained"
                 onClick={() => setAdvancedOpen(true)}
                 sx={{
-                  minWidth: { xs: '50%', md: 60 },
-                  px: 2,
-                  py: { xs: 2, md: 0 },
-                  height: { md: '60px' },
-                  borderRadius: 0,
-                  bgcolor: 'secondary.main',
+                  minWidth: { xs: '100%', md: 64 },
+                  px: { xs: 3, md: 0 },
+                  py: { xs: 1.3, md: 0 },
+                  height: { md: 60 },
+                  borderRadius: 999,
+                  bgcolor: '#111827',
                   color: 'white',
                   boxShadow: 'none',
-                  transition: 'all 0.3s ease',
+                  transition: 'all 0.2s ease',
                   '&:hover': {
-                    bgcolor: 'secondary.dark',
-                    transform: 'scale(1.05)',
+                    bgcolor: '#1F2937',
+                    transform: 'translateY(-1px)',
                   },
                 }}
               >
@@ -431,27 +431,26 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
             </Tooltip>
 
             {/* Bouton Reset */}
-            <Box sx={{ overflow: 'hidden', borderRadius: '0 50px 50px 0' }}>
-              <Tooltip title="Réinitialiser tous les filtres" arrow>
-                <IconButton
-                  onClick={handleReset}
-                  sx={{
-                    borderRadius: '0 50px 50px 0',
-                    px: 2.5,
-                    height: { xs: 'auto', md: '60px' },
-                    bgcolor: 'grey.100',
-                    color: 'text.secondary',
-                    transition: 'transform 0.3s ease',
-                    '&:hover': {
-                      transform: 'rotate(90deg)',
-                    },
-                  }}
-                >
-                  <RestartAltIcon sx={{ fontSize: 24 }} />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
+            <Tooltip title="Réinitialiser tous les filtres" arrow>
+              <IconButton
+                onClick={handleReset}
+                sx={{
+                  borderRadius: 999,
+                  px: { xs: 1, md: 1.5 },
+                  height: { xs: 48, md: 60 },
+                  bgcolor: 'rgba(17, 24, 39, 0.04)',
+                  color: 'text.secondary',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    bgcolor: 'rgba(17, 24, 39, 0.08)',
+                    transform: 'scale(1.02)',
+                  },
+                }}
+              >
+                <RestartAltIcon sx={{ fontSize: 24 }} />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </Box>
       </Paper>
 
@@ -643,10 +642,6 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                 🔮 Fonctionnalités à venir
               </Typography>
               <Stack spacing={1.5}>
-                <FormControlLabel
-                  control={<Switch disabled />}
-                  label="Annonces avec images uniquement"
-                />
                 <FormControlLabel
                   control={<Switch disabled />}
                   label="Trier par pertinence"

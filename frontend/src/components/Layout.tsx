@@ -8,9 +8,23 @@ export default function Layout() {
   return (
     <>
       <ScrollToTop />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          backgroundColor: 'background.default',
+        }}
+      >
         <Navbar />
-        <Box component="main" sx={{ flexGrow: 1, py: 4 }}>
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            py: { xs: 3, md: 6 },
+            px: { xs: 2, md: 0 },
+          }}
+        >
           <Outlet />
         </Box>
         <Footer />

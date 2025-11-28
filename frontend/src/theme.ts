@@ -1,33 +1,31 @@
 import { createTheme } from '@mui/material/styles'
 
-// 🦆 Palette LeBonCoinCoin - Inspirée du canard en plastique jaune
 const duckYellow = {
-  main: '#FFD700',      // Jaune canard principal
-  light: '#FFE44D',     // Jaune clair
-  dark: '#F4C430',      // Jaune moutarde
-  contrastText: '#1A1A1A',
-}
-
-const duckOrange = {
-  main: '#FF9500',      // Orange bec de canard
-  light: '#FFB347',
-  dark: '#E67E00',
-  contrastText: '#FFFFFF',
+  main: '#FFD700',
+  light: '#FFE063',
+  dark: '#E6C000',
+  contrastText: '#111827',
 }
 
 const theme = createTheme({
   palette: {
     mode: 'light',
     primary: duckYellow,
-    secondary: duckOrange,
+    secondary: {
+      main: '#6B7280',
+      light: '#A1A5B0',
+      dark: '#4B5563',
+      contrastText: '#FFFFFF',
+    },
     background: {
-      default: '#FAFAFA',
+      default: '#F8F9FA',
       paper: '#FFFFFF',
     },
     text: {
-      primary: '#1A1A1A',
-      secondary: '#666666',
+      primary: '#111827',
+      secondary: '#6B7280',
     },
+    divider: '#E5E7EB',
     success: {
       main: '#4CAF50',
       light: '#81C784',
@@ -50,28 +48,17 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: [
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-    ].join(','),
+    fontFamily: ['"Inter"', '"Plus Jakarta Sans"', 'sans-serif'].join(','),
     h1: {
-      fontWeight: 800,
-      fontSize: '2.5rem',
-      lineHeight: 1.2,
-      letterSpacing: '-0.01em',
+      fontWeight: 700,
+      fontSize: '2.75rem',
+      lineHeight: 1.1,
+      letterSpacing: '-0.02em',
     },
     h2: {
       fontWeight: 700,
-      fontSize: '2rem',
-      lineHeight: 1.3,
+      fontSize: '2.2rem',
+      lineHeight: 1.2,
       letterSpacing: '-0.01em',
     },
     h3: {
@@ -139,24 +126,33 @@ const theme = createTheme({
     '0px 92px 184px rgba(0, 0, 0, 0.52)',
   ],
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: '#F8F9FA',
+          color: '#111827',
+          fontFamily: '"Inter","Plus Jakarta Sans",sans-serif',
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
-          padding: '10px 24px',
-          fontSize: '0.9375rem',
+          borderRadius: 50,
+          padding: '10px 26px',
+          fontSize: '0.95rem',
           fontWeight: 600,
           textTransform: 'none',
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+            boxShadow: '0px 6px 20px rgba(17, 24, 39, 0.1)',
             transform: 'translateY(-1px)',
           },
           transition: 'all 0.2s ease-in-out',
         },
         contained: {
           '&:hover': {
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+            boxShadow: '0px 8px 24px rgba(17, 24, 39, 0.12)',
           },
         },
         sizeLarge: {
@@ -172,13 +168,10 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08)',
-          transition: 'all 0.3s ease-in-out',
-          '&:hover': {
-            boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.12)',
-            transform: 'translateY(-4px)',
-          },
+          borderRadius: 16,
+          border: '1px solid #F3F4F6',
+          boxShadow: '0 2px 4px rgba(15, 23, 42, 0.02)',
+          transition: 'all 0.25s ease',
         },
       },
     },
@@ -195,14 +188,14 @@ const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 12,
           fontWeight: 500,
           height: 28,
         },
         filled: {
-          backgroundColor: '#F5F5F5',
+          backgroundColor: '#F3F4F6',
           '&:hover': {
-            backgroundColor: '#EEEEEE',
+            backgroundColor: '#E5E7EB',
           },
         },
       },
@@ -211,13 +204,15 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 10,
+            borderRadius: 16,
+            boxShadow: 'none',
             '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: duckYellow.main,
+              borderColor: '#D1D5DB',
             },
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: duckYellow.main,
               borderWidth: 2,
+              boxShadow: '0 0 0 4px rgba(255, 215, 0, 0.2)',
             },
           },
         },
@@ -227,24 +222,22 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-        },
-        rounded: {
-          borderRadius: 12,
+          borderRadius: 16,
         },
         elevation1: {
-          boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 4px 20px rgba(15, 23, 42, 0.08)',
         },
         elevation2: {
-          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 8px 30px rgba(15, 23, 42, 0.1)',
         },
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.08)',
+          boxShadow: '0px 1px 0px rgba(15, 23, 42, 0.08)',
           backgroundColor: '#FFFFFF',
-          color: '#1A1A1A',
+          color: '#111827',
         },
       },
     },
@@ -261,11 +254,11 @@ const theme = createTheme({
     MuiIconButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 12,
           transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            backgroundColor: 'rgba(255, 215, 0, 0.1)',
-            transform: 'scale(1.05)',
+            backgroundColor: 'rgba(17, 24, 39, 0.04)',
+            transform: 'scale(1.03)',
           },
         },
       },

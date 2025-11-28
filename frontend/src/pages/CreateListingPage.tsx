@@ -26,7 +26,7 @@ import { searchLocations, type LocationSuggestion } from '@/services/locationApi
 import type { CreateListingRequest } from '@/types'
 import CategorySelect from '@/components/CategorySelect'
 
-type FieldErrors = Partial<Record<'title' | 'description' | 'location', string>>
+type FieldErrors = Partial<Record<'title' | 'description' | 'location' | 'price', string>>
 
 export default function CreateListingPage() {
   const navigate = useNavigate()
@@ -39,6 +39,7 @@ export default function CreateListingPage() {
   const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([])
   const [locationLoading, setLocationLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [imageError, setImageError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<CreateListingRequest>({
     title: '',
@@ -61,7 +62,7 @@ export default function CreateListingPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    if (name === 'title' || name === 'description' || name === 'location') {
+    if (name === 'title' || name === 'description' || name === 'location' || name === 'price') {
       clearFieldError(name as keyof FieldErrors)
     }
     setFormData((prev) => ({
@@ -96,7 +97,13 @@ export default function CreateListingPage() {
         await uploadApi.uploadToS3(uploadUrl, file)
 
         // Add to uploaded images
-        setUploadedImages((prev) => [...prev, publicUrl])
+        setUploadedImages((prev) => {
+          const next = [...prev, publicUrl]
+          if (next.length > 0) {
+            setImageError(null)
+          }
+          return next
+        })
       }
     } catch (err) {
       console.error('Error uploading image:', err)
@@ -107,7 +114,13 @@ export default function CreateListingPage() {
   }
 
   const handleRemoveImage = (index: number) => {
-    setUploadedImages((prev) => prev.filter((_, i) => i !== index))
+    setUploadedImages((prev) => {
+      const next = prev.filter((_, i) => i !== index)
+      if (next.length === 0) {
+        setImageError("Ajoutez au moins une image pour publier votre annonce.")
+      }
+      return next
+    })
   }
 
   const handleLocationSearch = async (query: string) => {
@@ -142,6 +155,9 @@ export default function CreateListingPage() {
     if (locationLength < 2 || locationLength > 100) {
       errors.location = 'Location must be between 2 and 100 characters'
     }
+    if (!formData.price || formData.price <= 0) {
+      errors.price = 'Le prix est obligatoire et doit être supérieur à 0'
+    }
 
     setFieldErrors(errors)
     return Object.keys(errors).length === 0
@@ -153,6 +169,13 @@ export default function CreateListingPage() {
 
     if (!validateForm()) {
       setError('Merci de corriger les erreurs indiquées.')
+      return
+    }
+
+    if (uploadedImages.length === 0) {
+      const message = "L'ajout d'au moins une image est obligatoire."
+      setImageError(message)
+      setError(message)
       return
     }
 
@@ -243,7 +266,10 @@ export default function CreateListingPage() {
             value={formData.price}
             onChange={handleChange}
             inputProps={{ min: 0, max: 999999999.99, step: 0.01 }}
-            helperText="Maximum: 999 999 999.99 €"
+            error={Boolean(fieldErrors.price)}
+            helperText={
+              fieldErrors.price ? fieldErrors.price : 'Maximum: 999 999 999.99 €'
+            }
             sx={{ mb: 2 }}
           />
 
@@ -333,6 +359,12 @@ export default function CreateListingPage() {
                 onChange={handleImageUpload}
               />
             </Button>
+
+            {imageError && (
+              <Typography variant="body2" color="error" sx={{ mb: uploadedImages.length ? 2 : 0 }}>
+                {imageError}
+              </Typography>
+            )}
 
             {uploadedImages.length > 0 && (
               <ImageList cols={3} gap={8}>

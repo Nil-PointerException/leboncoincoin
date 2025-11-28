@@ -66,37 +66,27 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Hero Section - Plus compact */}
+      {/* Hero Section */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #FFD700 0%, #FF9500 100%)',
-          color: 'white',
-          py: { xs: 4, md: 6 },
-          mb: 4,
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-          },
+          backgroundColor: '#FFFFFF',
+          color: 'text.primary',
+          py: { xs: 5, md: 8 },
+          mb: 5,
+          borderBottom: '1px solid #F3F4F6',
         }}
       >
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Stack spacing={2.5} alignItems="center" textAlign="center">
+        <Container maxWidth="lg">
+          <Stack spacing={3} alignItems="center" textAlign="center">
             <Typography
               variant="h2"
               sx={{
-                fontWeight: 900,
-                fontSize: { xs: '1.75rem', md: '2.5rem' },
-                textShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                fontWeight: 700,
+                fontSize: { xs: '2rem', md: '3rem' },
+                color: 'text.primary',
               }}
             >
-              🦆 Trouvez tout ce qu'il vous faut
+              Trouvez tout ce qu&apos;il vous faut
             </Typography>
             
             <Typography
@@ -104,9 +94,8 @@ export default function HomePage() {
               sx={{
                 fontWeight: 400,
                 maxWidth: 600,
-                opacity: 0.95,
-                fontSize: { xs: '0.95rem', md: '1.1rem' },
-                textShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                fontSize: { xs: '1rem', md: '1.1rem' },
+                color: 'text.secondary',
               }}
             >
               Achetez, vendez et échangez en toute simplicité
@@ -116,16 +105,16 @@ export default function HomePage() {
               size="large"
               onClick={() => navigate('/create')}
               sx={{
-                bgcolor: 'white',
-                color: 'primary.main',
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
                 fontSize: '1rem',
-                px: 4,
-                py: 1.25,
+                px: 5,
+                py: 1.5,
                 mt: 1,
                 '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.95)',
+                  bgcolor: 'primary.dark',
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                  boxShadow: '0 14px 30px rgba(17, 24, 39, 0.15)',
                 },
               }}
             >
@@ -133,19 +122,6 @@ export default function HomePage() {
             </PrimaryDuckButton>
           </Stack>
         </Container>
-
-        {/* Wave decoration - Plus petit */}
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 40,
-            background: 'white',
-            clipPath: 'ellipse(100% 100% at 50% 100%)',
-          }}
-        />
       </Box>
 
       {/* Main Content */}

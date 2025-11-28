@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.NotEmpty;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -31,6 +32,7 @@ public record CreateListingRequest(
     @Size(min = 2, max = 100, message = "Location must be between 2 and 100 characters")
     String location,
     
+    @NotEmpty(message = "At least one image is required")
     @Size(max = 10, message = "Maximum 10 images allowed")
     List<String> imageUrls
 ) {

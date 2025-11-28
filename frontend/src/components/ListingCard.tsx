@@ -98,7 +98,6 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
   return (
     <DuckCard
       hover
-      gradient
       onClick={handleClick}
       sx={{
         cursor: 'pointer',
@@ -108,9 +107,6 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
         position: 'relative',
         overflow: 'hidden',
         transition: 'all 0.3s ease',
-        '&:hover': {
-          boxShadow: '0 12px 40px rgba(255, 215, 0, 0.3)',
-        },
       }}
     >
       {/* Image avec overlay gradient */}
