@@ -60,6 +60,14 @@ export default function Navbar() {
           <Toolbar disableGutters sx={{ py: 1 }}>
             {/* Logo */}
             <Box
+              component="a"
+              href="/"
+              onClick={(e) => {
+                e.preventDefault()
+                navigate('/')
+              }}
+              role="link"
+              aria-label="Retour à l'accueil - LeBonCoinCoin"
               sx={{
                 flexGrow: 1,
                 cursor: 'pointer',
@@ -68,9 +76,15 @@ export default function Navbar() {
                 gap: 1,
                 transition: 'transform 0.2s',
                 userSelect: 'none',
+                textDecoration: 'none',
                 '&:hover': { transform: 'scale(1.05)' },
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
+                  borderRadius: '4px',
+                },
               }}
-              onClick={() => navigate('/')}
             >
               <Typography
                 variant="h5"
@@ -120,6 +134,7 @@ export default function Navbar() {
                   <Tooltip title="Accueil">
                     <IconButton
                       onClick={() => navigate('/')}
+                      aria-label="Aller à l'accueil"
                       sx={{ display: { xs: 'flex', md: 'none' } }}
                     >
                       <HomeIcon />
@@ -130,6 +145,7 @@ export default function Navbar() {
                   <Tooltip title={`Mes favoris${favoritesCount > 0 ? ` (${favoritesCount})` : ''}`}>
                     <IconButton 
                       onClick={() => navigate('/favorites')}
+                      aria-label={`Mes favoris${favoritesCount > 0 ? ` - ${favoritesCount} annonce${favoritesCount > 1 ? 's' : ''}` : ''}`}
                       sx={{
                         color: 'text.primary',
                         transition: 'all 0.2s ease',
@@ -162,6 +178,7 @@ export default function Navbar() {
                   <Tooltip title={`Messagerie${unreadMessagesCount > 0 ? ` (${unreadMessagesCount} non lus)` : ''}`}>
                     <IconButton 
                       onClick={() => navigate('/conversations')}
+                      aria-label={`Messagerie${unreadMessagesCount > 0 ? ` - ${unreadMessagesCount} message${unreadMessagesCount > 1 ? 's' : ''} non lu${unreadMessagesCount > 1 ? 's' : ''}` : ''}`}
                       sx={{
                         color: 'text.primary',
                         transition: 'all 0.2s ease',

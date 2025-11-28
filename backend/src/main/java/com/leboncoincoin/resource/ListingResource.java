@@ -70,6 +70,20 @@ public class ListingResource {
         return Response.ok(ListingResponse.from(listing)).build();
     }
 
+    @GET
+    @Path("/user/{userId}")
+    @PermitAll
+    public Response getListingsByUserId(@PathParam("userId") String userId) {
+        Log.infof("GET /listings/user/%s", userId);
+        
+        List<Listing> listings = listingService.getListingsByUserId(userId);
+        List<ListingResponse> response = listings.stream()
+                .map(ListingResponse::from)
+                .toList();
+        
+        return Response.ok(response).build();
+    }
+
     @POST
     @Authenticated
     public Response create(@Valid CreateListingRequest request) {

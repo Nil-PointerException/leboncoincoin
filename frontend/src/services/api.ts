@@ -71,6 +71,11 @@ export const listingsApi = {
     return data
   },
 
+  getByUserId: async (userId: string): Promise<Listing[]> => {
+    const { data } = await api.get(`/listings/user/${userId}`)
+    return data
+  },
+
   create: async (request: CreateListingRequest): Promise<Listing> => {
     const response = await api.post('/listings', request)
     if (response.status >= 400) {

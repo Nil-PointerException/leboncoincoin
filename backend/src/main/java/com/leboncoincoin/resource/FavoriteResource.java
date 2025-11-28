@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
@@ -41,6 +42,12 @@ public class FavoriteResource {
 
     @Inject
     JsonWebToken jwt;
+
+    @ConfigProperty(name = "app.dev.test-user-email", defaultValue = "dev@leboncoincoin.local")
+    Optional<String> devUserEmail;
+
+    @ConfigProperty(name = "app.dev.test-user-name", defaultValue = "Dev User")
+    Optional<String> devUserName;
 
     /**
      * Get all favorites for the current user
@@ -85,10 +92,61 @@ public class FavoriteResource {
     @Path("/{listingId}")
     @Transactional
     public Response addFavorite(@PathParam("listingId") String listingId) {
-        String userId = securityConfig.getCurrentUserId();
-        Object emailObj = jwt.getClaim("email");
-        String email = (emailObj != null) ? emailObj.toString() : null;
-        String name = securityConfig.getCurrentUserName();
+        String userId = null;
+        String email = null;
+        String name = null;
+
+        // Try to get user info from SecurityConfig first (works in dev mode)
+        if (securityConfig.isAuthenticated()) {
+            try {
+                userId = securityConfig.getCurrentUserId();
+            } catch (SecurityException ignored) {
+                // fallback to JWT subject below
+            }
+            // Try to get email, but don't fail if not available
+            try {
+                email = securityConfig.getCurrentUserEmail();
+            } catch (SecurityException e) {
+                Log.debugf("Email not found via SecurityConfig, will try JWT: %s", e.getMessage());
+                // fallback to JWT claim below
+            }
+            name = securityConfig.getCurrentUserName();
+            if (name == null || name.equals("Unknown User")) {
+                name = "Utilisateur";
+            }
+        }
+
+        // Fallback to JWT if SecurityConfig didn't work
+        if (jwt != null) {
+            if (userId == null) {
+                userId = jwt.getSubject();
+            }
+            if (email == null) {
+                Object emailObj = jwt.getClaim("email");
+                email = emailObj != null ? emailObj.toString() : null;
+            }
+            if (name == null || name.equals("Unknown User")) {
+                Object nameObj = jwt.getClaim("name");
+                name = nameObj != null ? nameObj.toString() : null;
+            }
+        }
+
+        // Fallback to dev config values if still null
+        if (email == null && devUserEmail.isPresent()) {
+            email = devUserEmail.get();
+            Log.debugf("Using dev email from config: %s", email);
+        }
+        if (name == null || name.equals("Unknown User")) {
+            name = devUserName.orElse("Utilisateur");
+            Log.debugf("Using dev name from config: %s", name);
+        }
+
+        if (userId == null) {
+            Log.error("ERREUR CRITIQUE: Impossible de récupérer l'ID utilisateur pour ajouter un favori !");
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity("{\"message\": \"User ID not found. Authentication required.\"}")
+                    .build();
+        }
 
         Log.infof("POST /favorites/%s for user %s", listingId, userId);
 

@@ -220,7 +220,26 @@ export default function ListingDetailPage() {
               </Typography>
 
               <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
-                Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')}
+                Publié le {new Date(listing.createdAt).toLocaleDateString('fr-FR')} par{' '}
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => navigate(`/seller/${listing.userId}`)}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: 'inherit',
+                    fontWeight: 600,
+                    color: 'primary.main',
+                    p: 0,
+                    minWidth: 'auto',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                      backgroundColor: 'transparent',
+                    },
+                  }}
+                >
+                  {listing.userName}
+                </Button>
                 {listing.updatedAt && listing.updatedAt !== listing.createdAt && (
                   <> • Modifié le {new Date(listing.updatedAt).toLocaleDateString('fr-FR')}</>
                 )}

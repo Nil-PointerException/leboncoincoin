@@ -7,6 +7,8 @@ export interface Listing {
   location: string
   imageUrls: string[]
   userId: string
+  userName: string
+  userEmail: string | null
   createdAt: string
   updatedAt: string
 }

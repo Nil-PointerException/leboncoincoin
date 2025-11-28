@@ -23,7 +23,7 @@ import { listingsApi, uploadApi, setAuthToken } from '@/services/api'
 import { searchLocations, type LocationSuggestion } from '@/services/locationApi'
 import type { CreateListingRequest } from '@/types'
 import CategorySelect from '@/components/CategorySelect'
-import { CATEGORY_KEYWORDS } from '@/constants/categoryKeywords'
+import { guessCategoryFromText } from '@/constants/categoryKeywords'
 
 type FieldErrors = Partial<Record<'title' | 'description' | 'location' | 'price', string>>
 
@@ -60,16 +60,6 @@ export default function CreateListingPage() {
     })
   }
 
-  const guessCategoryFromTitle = (title: string) => {
-    const normalized = title.toLowerCase()
-    for (const mapping of CATEGORY_KEYWORDS) {
-      if (mapping.keywords.some((keyword) => normalized.includes(keyword))) {
-        return mapping.category
-      }
-    }
-    return null
-  }
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     if (name === 'title' || name === 'description' || name === 'location' || name === 'price') {
@@ -81,7 +71,7 @@ export default function CreateListingPage() {
         ? (() => {
             const updates: Partial<CreateListingRequest> = { title: value }
             if (!categoryLocked) {
-              const guessedCategory = guessCategoryFromTitle(value)
+              const guessedCategory = guessCategoryFromText(value)
               if (guessedCategory) {
                 updates.category = guessedCategory
               }

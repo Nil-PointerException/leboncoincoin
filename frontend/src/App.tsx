@@ -13,6 +13,7 @@ import FavoritesPage from './pages/FavoritesPage'
 import ContactPage from './pages/ContactPage'
 import LegalPage from './pages/LegalPage'
 import PrivacyPage from './pages/PrivacyPage'
+import SellerPage from './pages/SellerPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 const isDev = !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 
@@ -24,6 +25,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="/listings/:id" element={<ListingDetailPage />} />
+        <Route path="/seller/:userId" element={<SellerPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/legal" element={<LegalPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />

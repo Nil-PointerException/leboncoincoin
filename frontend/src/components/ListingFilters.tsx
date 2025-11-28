@@ -35,6 +35,7 @@ import { getCurrentCity } from '@/services/geolocationApi'
 import type { ListingFilter } from '@/types'
 import CategorySelect from '@/components/CategorySelect'
 import { getCategoryIcon } from '@/constants/categoryIcons'
+import { guessCategoryFromText } from '@/constants/categoryKeywords'
 
 interface ListingFiltersProps {
   onFilter: (filters: ListingFilter) => void
@@ -48,6 +49,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
   const [locationValue, setLocationValue] = useState<LocationSuggestion | string | null>(null)
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const [geolocating, setGeolocating] = useState(false)
+  const [categoryLocked, setCategoryLocked] = useState(false)
 
   const handleSearch = () => {
     onFilter(filters)
@@ -57,6 +59,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
     setFilters({})
     setLocationInputValue('')
     setLocationValue(null)
+    setCategoryLocked(false)
     onFilter({})
   }
 
@@ -165,7 +168,20 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
               fullWidth
               placeholder="Que recherchez-vous ?"
               value={filters.search || ''}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              onChange={(e) => {
+                const searchValue = e.target.value
+                const newFilters: ListingFilter = { ...filters, search: searchValue }
+                
+                // Auto-detect category from search text if category is not locked
+                if (!categoryLocked && searchValue.trim().length > 0) {
+                  const guessedCategory = guessCategoryFromText(searchValue)
+                  if (guessedCategory) {
+                    newFilters.category = guessedCategory
+                  }
+                }
+                
+                setFilters(newFilters)
+              }}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               variant="standard"
               InputProps={{
@@ -222,7 +238,10 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
           >
             <CategorySelect
               value={filters.category || ''}
-              onChange={(category) => setFilters({ ...filters, category })}
+              onChange={(category) => {
+                setCategoryLocked(Boolean(category))
+                setFilters({ ...filters, category })
+              }}
               variant="standard"
               disableUnderline
               hideLabel
@@ -613,9 +632,11 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
                       label={category}
                       onClick={() => {
                         // Toggle category (pour l'instant, on garde une seule catégorie)
+                        const newCategory = filters.category === category ? undefined : category
+                        setCategoryLocked(Boolean(newCategory))
                         setFilters({ 
                           ...filters, 
-                          category: filters.category === category ? undefined : category 
+                          category: newCategory
                         })
                       }}
                       color={filters.category === category ? 'primary' : 'default'}
@@ -665,6 +686,7 @@ export default function ListingFilters({ onFilter }: ListingFiltersProps) {
             onClick={() => {
               setFilters({})
               setLocationInputValue('')
+              setCategoryLocked(false)
             }}
             startIcon={<RestartAltIcon />}
             color="secondary"

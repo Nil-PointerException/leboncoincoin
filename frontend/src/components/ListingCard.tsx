@@ -99,6 +99,15 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
     <DuckCard
       hover
       onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleClick()
+        }
+      }}
+      tabIndex={0}
+      role="article"
+      aria-label={`Annonce: ${listing.title} - ${formatPrice(listing.price)}€ à ${listing.location}`}
       sx={{
         cursor: 'pointer',
         height: '100%',
@@ -107,6 +116,11 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
         position: 'relative',
         overflow: 'hidden',
         transition: 'all 0.3s ease',
+        '&:focus-visible': {
+          outline: '3px solid',
+          outlineColor: 'primary.main',
+          outlineOffset: '2px',
+        },
       }}
     >
       {/* Image avec overlay gradient */}
@@ -122,7 +136,8 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
           component="img"
           height="200"
           image={imageUrl}
-          alt={listing.title}
+          alt={`Photo principale de ${listing.title}`}
+          loading="lazy"
           sx={{
             objectFit: 'cover',
             transition: 'transform 0.5s ease',
@@ -151,6 +166,8 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
               onClick={handleFavoriteClick}
               disabled={isLoading}
               size="small"
+              aria-label={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              aria-pressed={isFavorited}
               sx={{
                 position: 'absolute',
                 top: 8,
@@ -165,6 +182,11 @@ export default function ListingCard({ listing, onFavoriteChange }: ListingCardPr
                   backgroundColor: 'white',
                   transform: 'scale(1.15)',
                   boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+                },
+                '&:focus-visible': {
+                  outline: '3px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: '2px',
                 },
               }}
             >

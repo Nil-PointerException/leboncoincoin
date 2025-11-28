@@ -69,3 +69,22 @@ export const CATEGORY_KEYWORDS = [
   },
 ] as const
 
+/**
+ * Devine la catégorie à partir d'un texte en cherchant des mots-clés
+ * @param text Le texte à analyser (ex: titre d'annonce ou recherche)
+ * @returns La catégorie détectée ou null si aucune correspondance
+ */
+export function guessCategoryFromText(text: string): string | null {
+  if (!text || text.trim().length === 0) {
+    return null
+  }
+  
+  const normalized = text.toLowerCase()
+  for (const mapping of CATEGORY_KEYWORDS) {
+    if (mapping.keywords.some((keyword) => normalized.includes(keyword))) {
+      return mapping.category
+    }
+  }
+  return null
+}
+
