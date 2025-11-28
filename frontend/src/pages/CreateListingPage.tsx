@@ -14,17 +14,16 @@ import {
   ImageList,
   ImageListItem,
   ImageListItemBar,
-  MenuItem,
   Autocomplete,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import { listingsApi, uploadApi, setAuthToken } from '@/services/api'
-import { CATEGORIES } from '@/constants/categories'
 import { searchLocations, type LocationSuggestion } from '@/services/locationApi'
 import type { CreateListingRequest } from '@/types'
 import CategorySelect from '@/components/CategorySelect'
+import { CATEGORY_KEYWORDS } from '@/constants/categoryKeywords'
 
 type FieldErrors = Partial<Record<'title' | 'description' | 'location' | 'price', string>>
 
@@ -40,6 +39,7 @@ export default function CreateListingPage() {
   const [locationLoading, setLocationLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [imageError, setImageError] = useState<string | null>(null)
+  const [categoryLocked, setCategoryLocked] = useState(false)
 
   const [formData, setFormData] = useState<CreateListingRequest>({
     title: '',
@@ -60,6 +60,16 @@ export default function CreateListingPage() {
     })
   }
 
+  const guessCategoryFromTitle = (title: string) => {
+    const normalized = title.toLowerCase()
+    for (const mapping of CATEGORY_KEYWORDS) {
+      if (mapping.keywords.some((keyword) => normalized.includes(keyword))) {
+        return mapping.category
+      }
+    }
+    return null
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     if (name === 'title' || name === 'description' || name === 'location' || name === 'price') {
@@ -67,9 +77,21 @@ export default function CreateListingPage() {
     }
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' ? parseFloat(value) || 0 : value,
+      ...(name === 'title'
+        ? (() => {
+            const updates: Partial<CreateListingRequest> = { title: value }
+            if (!categoryLocked) {
+              const guessedCategory = guessCategoryFromTitle(value)
+              if (guessedCategory) {
+                updates.category = guessedCategory
+              }
+            }
+            return updates
+          })()
+        : { [name]: name === 'price' ? parseFloat(value) || 0 : value }),
     }))
   }
+  
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -275,9 +297,16 @@ export default function CreateListingPage() {
 
           <CategorySelect
             value={formData.category}
-            onChange={(category) => setFormData((prev) => ({ ...prev, category: category || '' }))}
+          onChange={(category) => {
+            setCategoryLocked(Boolean(category))
+            setFormData((prev) => ({ ...prev, category: category || '' }))
+          }}
             required
-            helperText="Sélectionnez la catégorie qui correspond le mieux à votre annonce"
+          helperText={
+            !categoryLocked && formData.category
+              ? 'Catégorie suggérée automatiquement à partir du titre. Vous pouvez la modifier.'
+              : 'Sélectionnez la catégorie qui correspond le mieux à votre annonce'
+          }
             sx={{ mb: 2 }}
           />
 
